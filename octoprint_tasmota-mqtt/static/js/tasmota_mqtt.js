@@ -5,7 +5,7 @@
  * License: AGPLv3
  */
 $(function() {
-    function Tasmota-mqttViewModel(parameters) {
+    function TasmotaMQTTViewModel(parameters) {
         var self = this;
 
         self.loginStateViewModel = parameters[0];
@@ -15,8 +15,8 @@ $(function() {
 		self.currentstate = ko.observable();
 		
 		self.onBeforeBinding = function() {		
-			self.topic(self.settingsViewModel.settings.plugins.tasmota-mqtt.topic());
-			self.currentstate(self.settingsViewModel.settings.plugins.tasmota-mqtt.currentstate());
+			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
+			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
         }
 
 		
@@ -27,7 +27,7 @@ $(function() {
      * and a full list of the available options.
      */
     OCTOPRINT_VIEWMODELS.push({
-        construct: Tasmota-mqttViewModel,
+        construct: TasmotaMQTTViewModel,
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
         dependencies: ["loginStateViewModel", "settingsViewModel"],
         // Elements to bind to, e.g. #settings_plugin_tasmota-mqtt, #tab_plugin_tasmota-mqtt, ...

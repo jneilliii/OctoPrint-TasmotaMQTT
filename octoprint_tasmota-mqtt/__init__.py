@@ -11,7 +11,7 @@ from __future__ import absolute_import
 
 import octoprint.plugin
 
-class Tasmota-mqttPlugin(octoprint.plugin.SettingsPlugin,
+class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
                          octoprint.plugin.AssetPlugin,
                          octoprint.plugin.TemplatePlugin,
 						 octoprint.plugin.StartupPlugin):
@@ -37,7 +37,7 @@ class Tasmota-mqttPlugin(octoprint.plugin.SettingsPlugin,
 				self.mqtt_unsubscribe = helpers["mqtt_unsubscribe"]
 
 		self.mqtt_publish("octoprint/plugin/tasmota/pub", "OctoPrint-TasmotaMQTT publishing.")
-		self.mqtt_subscribe("%s/stat/POWER" % self.settings.get(), self._on_mqtt_subscription)
+		self.mqtt_subscribe("%s/stat/POWER" % self.settings.get(["topic"]), self._on_mqtt_subscription)
 
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
@@ -51,8 +51,8 @@ class Tasmota-mqttPlugin(octoprint.plugin.SettingsPlugin,
 		# Define your plugin's asset files to automatically include in the
 		# core UI here.
 		return dict(
-			js=["js/tasmota-mqtt.js"],
-			css=["css/tasmota-mqtt.css"]
+			js=["js/tasmota_mqtt.js"],
+			css=["css/tasmota_mqtt.css"]
 		)
 		
 	##~~ TemplatePlugin mixin
@@ -70,8 +70,8 @@ class Tasmota-mqttPlugin(octoprint.plugin.SettingsPlugin,
 		# Plugin here. See https://github.com/foosel/OctoPrint/wiki/Plugin:-Software-Update
 		# for details.
 		return dict(
-			tasmota-mqtt=dict(
-				displayName="Tasmota-mqtt Plugin",
+			tasmota_mqtt=dict(
+				displayName="Tasmota-MQTT",
 				displayVersion=self._plugin_version,
 
 				# version check: github repository
@@ -89,11 +89,11 @@ class Tasmota-mqttPlugin(octoprint.plugin.SettingsPlugin,
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
-__plugin_name__ = "Tasmota-mqtt Plugin"
+__plugin_name__ = "Tasmota-MQTT"
 
 def __plugin_load__():
 	global __plugin_implementation__
-	__plugin_implementation__ = Tasmota-mqttPlugin()
+	__plugin_implementation__ = TasmotaMQTTPlugin()
 
 	global __plugin_hooks__
 	__plugin_hooks__ = {
