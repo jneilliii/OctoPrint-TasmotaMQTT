@@ -46,7 +46,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		
 	def on_event(self, event, payload):
 		if event == "ClientOpened":
-			self.mqtt_publish("%s/stat/POWER" % self._settings.get(["topic"]))
+			self.mqtt_publish("%s/cmnd/POWER" % self._settings.get(["topic"]),"")
 
 	##~~ AssetPlugin mixin
 
