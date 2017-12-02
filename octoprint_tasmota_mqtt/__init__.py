@@ -14,7 +14,8 @@ import octoprint.plugin
 class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
                          octoprint.plugin.AssetPlugin,
                          octoprint.plugin.TemplatePlugin,
-						 octoprint.plugin.StartupPlugin):
+						 octoprint.plugin.StartupPlugin,
+						 octoprint.plugin.SimpleApiPlugin):
 
 	##~~ SettingsPlugin mixin
 
@@ -63,6 +64,19 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			dict(type="navbar", custom_bindings=True),
 			dict(type="settings", custom_bindings=True)
 		]
+		
+	##~~ SimpleApiPlugin mixin
+	
+	def get_api_commands(self):
+		return dict(toggleRelay=["topic"])
+		
+	def on_api_command(self, command, data):
+		if not user_permission.can():
+			from flask import make_response
+			return make_response("Insufficient rights", 403)
+			
+		if command == 'toggleRelay':
+			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data), "TOGGLE")	
 	
 	##~~ Softwareupdate hook
 

@@ -27,6 +27,21 @@ $(function() {
 			console.log(data)
 			self.currentstate(data.currentstate);
         };
+		
+		self.toggleRelay = function(data) {
+            $.ajax({
+                url: API_BASEURL + "plugin/tasmota",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "toggleRelay",
+					topic: data.topic()
+                }),
+                contentType: "application/json; charset=UTF-8"
+            }).done(function(){
+				console.log("command sent.")
+				});
+        };
     }
 
     /* view model class, parameters for constructor, container to bind to
