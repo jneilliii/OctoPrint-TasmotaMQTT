@@ -21,9 +21,10 @@ $(function() {
 		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {
 			if (plugin != "tasmota_mqtt") {
+				console.log(plugin);
 				return;
 			}
-
+			console.log(data)
 			self.currentstate(data.currentstate);
         };
     }
