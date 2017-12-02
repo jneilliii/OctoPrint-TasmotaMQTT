@@ -15,7 +15,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_settings_defaults(self):
 		return dict(
-			topic = "sonoff"
+			topic = "sonoff",
+			currentstate = "UNKNOWN"
 		)
 		
 	##~~ StartupPlugin mixin
@@ -36,6 +37,9 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
 		self.mqtt_publish("octoprint/plugin/tasmota/pub", "echo: " + message)
+		self._settings.set(["currentstate"],message)
+		self._settings.set([topic,"currentstate"],message)
+		self._settings.save()
 		self._plugin_manager.send_plugin_message(self._identifier, dict(currentstate=message))
 
 	##~~ AssetPlugin mixin
