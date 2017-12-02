@@ -25,7 +25,7 @@ $(function() {
 				return;
 			}
 			self.currentstate(data.currentstate);
-			setTimeout(function(){ self.processing(''); }, 5000);			
+			setTimeout(self.processing(''), 3000);			
         };
 		
 		self.toggleRelay = function(data) {

@@ -32,7 +32,6 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 		self.mqtt_publish("octoprint/plugin/tasmota/pub", "OctoPrint-TasmotaMQTT publishing.")
 		self.mqtt_subscribe("%s/stat/POWER" % self._settings.get(["topic"]), self._on_mqtt_subscription)
-		self.mqtt_publish("%s/cmnd/Power" % self._settings.get(["topic"]))
 
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
