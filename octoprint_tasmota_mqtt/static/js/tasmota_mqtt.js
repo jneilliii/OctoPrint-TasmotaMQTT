@@ -26,10 +26,12 @@ $(function() {
 			}
 			self.currentstate(data.currentstate);
 			self.processing('');
+			console.log(self.processing());
         };
 		
 		self.toggleRelay = function(data) {
 			self.processing(data.topic());
+			console.log(self.processing());
             $.ajax({
                 url: API_BASEURL + "plugin/tasmota_mqtt",
                 type: "POST",
