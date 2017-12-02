@@ -20,7 +20,8 @@ $(function() {
         }
 
 		self.onEventSettingsUpdated = function() {
-			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
+			console.log("Settings Changed.")
+			self.currentstate(self.settingsViewModel.plugins.tasmota_mqtt.currentstate());
 		}
     }
 
