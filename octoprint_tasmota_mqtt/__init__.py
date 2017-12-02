@@ -38,7 +38,6 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
 		self.mqtt_publish("octoprint/plugin/tasmota/pub", "echo: " + message)
 		self._settings.set(["currentstate"],message)
-		self._settings.set([topic],message)
 		self._settings.save()
 		self._plugin_manager.send_plugin_message(self._identifier, dict(currentstate=message))
 
@@ -63,7 +62,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin mixin
 	
 	def get_api_commands(self):
-		return dict(toggleRelay=["topic"])
+		return dict(toggleRelay=["topic"],checkState=["topic"])
 		
 	def on_api_command(self, command, data):
 		if not user_permission.can():
@@ -72,6 +71,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			
 		if command == 'toggleRelay':
 			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data), "TOGGLE")	
+		if command == 'checkState':
+			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data))
 	
 	##~~ Softwareupdate hook
 

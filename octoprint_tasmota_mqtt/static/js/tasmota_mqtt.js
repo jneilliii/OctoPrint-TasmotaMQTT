@@ -15,10 +15,14 @@ $(function() {
 		self.currentstate = ko.observable('UNKNOWN');
 		self.processing = ko.observable('');
 		
-		self.onBeforeBinding = function() {		
+		self.onBeforeBinding = function() {
 			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
 			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
         }
+		
+		self.onAfterBinding = function() {
+			self.checkState();
+		}
 		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {
 			if (plugin != "tasmota_mqtt") {
@@ -42,6 +46,22 @@ $(function() {
                 contentType: "application/json; charset=UTF-8"
             }).done(function(){
 				console.log('command was sent to '+data.topic());
+				});
+        };
+		
+		self.checkState = function(self) {
+			self.processing(self.topic());
+            $.ajax({
+                url: API_BASEURL + "plugin/tasmota_mqtt",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "checkState",
+					topic: self.topic()
+                }),
+                contentType: "application/json; charset=UTF-8"
+            }).done(function(){
+				console.log('command was sent to '+self.topic());
 				});
         };
     }
