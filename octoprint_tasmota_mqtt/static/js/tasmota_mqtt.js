@@ -25,13 +25,11 @@ $(function() {
 				return;
 			}
 			self.currentstate(data.currentstate);
-			self.processing('');
-			console.log(self.processing());
+			setTimeout(function(){ self.processing(''); }, 5000);			
         };
 		
 		self.toggleRelay = function(data) {
 			self.processing(data.topic());
-			console.log(self.processing());
             $.ajax({
                 url: API_BASEURL + "plugin/tasmota_mqtt",
                 type: "POST",
@@ -42,7 +40,7 @@ $(function() {
                 }),
                 contentType: "application/json; charset=UTF-8"
             }).done(function(){
-				console.log('command sent to '+data.topic());
+				console.log('command was sent to '+data.topic());
 				});
         };
     }
