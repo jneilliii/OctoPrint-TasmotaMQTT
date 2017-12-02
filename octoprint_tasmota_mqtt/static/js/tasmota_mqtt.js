@@ -30,7 +30,7 @@ $(function() {
 		
 		self.toggleRelay = function(data) {
             $.ajax({
-                url: API_BASEURL + "plugin/tasmota",
+                url: API_BASEURL + "plugin/tasmota_mqtt",
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({
