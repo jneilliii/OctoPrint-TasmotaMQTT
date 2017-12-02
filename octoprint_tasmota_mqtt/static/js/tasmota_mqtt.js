@@ -19,7 +19,9 @@ $(function() {
 			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
         }
 
-		
+		self.onEventSettingsUpdated = function() {
+			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
+		}
     }
 
     /* view model class, parameters for constructor, container to bind to
