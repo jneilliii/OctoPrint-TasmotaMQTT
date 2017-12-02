@@ -43,7 +43,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
 		self.mqtt_publish("octoprint/plugin/tasmota/pub", "echo: " + message)
 		self._settings.set(["currentstate"], message)
-		#self._settings.save()
+		self._settings.save()
 
 	##~~ AssetPlugin mixin
 
