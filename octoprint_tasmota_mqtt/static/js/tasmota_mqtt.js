@@ -31,6 +31,6 @@ $(function() {
         // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
         dependencies: ["loginStateViewModel", "settingsViewModel"],
         // Elements to bind to, e.g. #settings_plugin_tasmota-mqtt, #tab_plugin_tasmota-mqtt, ...
-        elements: ["#settings_plugin_tasmota-mqtt","#navbar_plugin_tasmota-mqtt"]
+        elements: ["#settings_plugin_tasmota_mqtt","#navbar_plugin_tasmota_mqtt"]
     });
 });
