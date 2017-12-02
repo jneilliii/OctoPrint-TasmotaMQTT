@@ -13,6 +13,7 @@ $(function() {
 
         self.topic = ko.observable();
 		self.currentstate = ko.observable();
+		self.processing = ko.observable('');
 		
 		self.onBeforeBinding = function() {		
 			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
@@ -39,7 +40,8 @@ $(function() {
                 }),
                 contentType: "application/json; charset=UTF-8"
             }).done(function(){
-				console.log("command sent.")
+				console.log('command sent to '+data.topic());
+				self.processing('');
 				});
         };
     }
