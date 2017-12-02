@@ -18,10 +18,14 @@ $(function() {
 			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
 			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
         }
+		
+		self.onDataUpdaterPluginMessage = function(plugin, data) {
+			if (plugin != "tasmota_mqtt") {
+				return;
+			}
 
-		self.onEventSettingsUpdated = function() {			
-			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
-		}
+			self.currentstate(data.currentstate);
+        };
     }
 
     /* view model class, parameters for constructor, container to bind to
