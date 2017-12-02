@@ -9,7 +9,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
                          octoprint.plugin.AssetPlugin,
                          octoprint.plugin.TemplatePlugin,
 						 octoprint.plugin.StartupPlugin,
-						 octoprint.plugin.SimpleApiPlugin):
+						 octoprint.plugin.SimpleApiPlugin,
+						 octoprint.plugin.EventHandlerPlugin):
 
 	##~~ SettingsPlugin mixin
 
@@ -40,6 +41,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._settings.set(["currentstate"],message)
 		self._settings.save()
 		self._plugin_manager.send_plugin_message(self._identifier, dict(currentstate=message))
+		
+	##~~ EventHandlerPlugin mixin
+		
+	def on_event(self, event, payload):
+		if event == "ClientOpened":
+			self.mqtt_publish("%s/stat/POWER" % self._settings.get(["topic"]))
 
 	##~~ AssetPlugin mixin
 
