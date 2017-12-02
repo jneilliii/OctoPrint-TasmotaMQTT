@@ -17,7 +17,7 @@ $(function() {
 		
 		self.onBeforeBinding = function() {
 			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
-			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
+			//self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
         }
 		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {

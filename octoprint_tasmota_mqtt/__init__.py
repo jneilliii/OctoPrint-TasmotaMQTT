@@ -16,8 +16,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_settings_defaults(self):
 		return dict(
-			topic = "sonoff",
-			currentstate = "UNKNOWN"
+			topic = "sonoff" #,
+			#currentstate = "UNKNOWN"
 		)
 		
 	##~~ StartupPlugin mixin
