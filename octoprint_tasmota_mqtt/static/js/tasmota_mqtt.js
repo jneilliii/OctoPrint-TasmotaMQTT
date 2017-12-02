@@ -12,19 +12,20 @@ $(function() {
         self.settingsViewModel = parameters[1];
 
         self.topic = ko.observable();
-		self.currentstate = ko.observable();
+		self.currentstate = ko.observable('UNKNOWN');
 		self.processing = ko.observable('');
 		
 		self.onBeforeBinding = function() {		
 			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
-			self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
         }
 		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {
 			if (plugin != "tasmota_mqtt") {
+				self.processing('');
 				return;
 			}
 			self.currentstate(data.currentstate);
+			self.processing('');
         };
 		
 		self.toggleRelay = function(data) {
@@ -40,7 +41,6 @@ $(function() {
                 contentType: "application/json; charset=UTF-8"
             }).done(function(){
 				console.log('command sent to '+data.topic());
-				self.processing('');
 				});
         };
     }
