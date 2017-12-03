@@ -16,8 +16,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_settings_defaults(self):
 		return dict(
-			topic = "sonoff" #,
-			#currentstate = "UNKNOWN"
+			topic = "sonoff"
 		)
 		
 	##~~ StartupPlugin mixin
@@ -69,7 +68,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin mixin
 	
 	def get_api_commands(self):
-		return dict(toggleRelay=["topic"],checkState=["topic"])
+		return dict(toggleRelay=["topic"])
 		
 	def on_api_command(self, command, data):
 		if not user_permission.can():
@@ -77,9 +76,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return make_response("Insufficient rights", 403)
 			
 		if command == 'toggleRelay':
-			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data), "TOGGLE")	
-		if command == 'checkState':
-			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data))
+			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data), "TOGGLE")
 	
 	##~~ Softwareupdate hook
 
