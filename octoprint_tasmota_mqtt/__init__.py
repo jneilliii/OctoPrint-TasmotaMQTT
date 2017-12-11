@@ -17,6 +17,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	def get_settings_defaults(self):
 		return dict(
 			topic = "sonoff"
+			arrRelays = [dict(topic="sonoff",warn=True,gcode=False)]
 		)
 		
 	##~~ StartupPlugin mixin
@@ -68,7 +69,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin mixin
 	
 	def get_api_commands(self):
-		return dict(toggleRelay=["topic"])
+		return dict(toggleRelay=["topic"],addTopic=["topic"])
 		
 	def on_api_command(self, command, data):
 		if not user_permission.can():
@@ -77,6 +78,11 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			
 		if command == 'toggleRelay':
 			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data), "TOGGLE")
+			
+		if command == 'addTopic':
+			relays = self._settings.get(["arrRelays"])
+			relays.append(dict(topic="{topic}".format(**data),warn=True,gcode=False))			
+			self._settings.set(["arrRelays"],relays,True)
 	
 	##~~ Softwareupdate hook
 

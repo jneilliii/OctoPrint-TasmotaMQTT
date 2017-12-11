@@ -14,9 +14,11 @@ $(function() {
         self.topic = ko.observable();
 		self.currentstate = ko.observable('UNKNOWN');
 		self.processing = ko.observable('');
+		self.arrRelays = ko.observableArray();
 		
 		self.onBeforeBinding = function() {
 			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
+			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
 			//self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
         }
 		
@@ -44,6 +46,15 @@ $(function() {
 				console.log('command was sent to '+data.topic());
 				});
         };
+		
+		self.addRelay = function(data) {
+			console.log(data);
+			self.settingsViewModel.settings.plugin.tasmota_mqtt.arrRelays.push( {'topic':ko.observable('sonoff'),'warn':ko.observable(true),'gcode':ko.observable(false)} );
+		}
+		
+		self.removeRelay = function(data) {
+			console.log(data);
+		}
     }
 
     /* view model class, parameters for constructor, container to bind to
