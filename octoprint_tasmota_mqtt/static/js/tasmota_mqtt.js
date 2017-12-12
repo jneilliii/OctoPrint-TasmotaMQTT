@@ -48,7 +48,6 @@ $(function() {
         };
 		
 		self.addRelay = function() {
-			console.log(data);
 			self.settingsViewModel.settings.plugin.tasmota_mqtt.arrRelays.push( {'index':ko.observable(++self.settingsViewModel.settings.plugin.tasmota_mqtt.arrRelays.length()),'topic':ko.observable('sonoff'),'warn':ko.observable(true),'gcode':ko.observable(false)} );
 		}
 		
