@@ -49,7 +49,7 @@ $(function() {
         };
 		
 		self.addRelay = function() {
-			var nextIndex = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.length-1)+1;
+			var nextIndex = 10;
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push( {'index':ko.observable(nextIndex),'topic':ko.observable('sonoff'),'warn':ko.observable(true),'gcode':ko.observable(false)} );
 		}
 		
