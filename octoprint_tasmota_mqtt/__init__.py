@@ -77,11 +77,11 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return make_response("Insufficient rights", 403)
 			
 		if command == 'toggleRelay':
-			self.logger.info("toggling {topic}".format(**data))
+			self._logger.info("toggling {topic}".format(**data))
 			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data), "TOGGLE")
 			
 		if command == 'addTopic':
-			self.logger.info("adding {topic}".format(**data))
+			self._logger.info("adding {topic}".format(**data))
 			relays = self._settings.get(["arrRelays"])
 			relays.append(dict(topic="{topic}".format(**data),warn=True,gcode=False))			
 			self._settings.set(["arrRelays"],relays,True)
