@@ -49,11 +49,13 @@ $(function() {
         };
 		
 		self.addRelay = function() {
-			self.arrRelays.push( {'index':ko.observable(self.arrRelays(self.arrRelays.length-1)+1),'topic':ko.observable('sonoff'),'warn':ko.observable(true),'gcode':ko.observable(false)} );
+			var nextIndex = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.length-1)+1;
+			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push( {'index':ko.observable(nextIndex),'topic':ko.observable('sonoff'),'warn':ko.observable(true),'gcode':ko.observable(false)} );
 		}
 		
 		self.removeRelay = function(data) {
 			console.log(data);
+			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.remove(data);
 		}
     }
 
