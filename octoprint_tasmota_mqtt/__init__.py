@@ -16,8 +16,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_settings_defaults(self):
 		return dict(
-			topic = "sonoff"
-			arrRelays = [{'index':1,'topic':'sonoff','warn':True,'gcode':False}]			
+			topic = "sonoff",
+			arrRelays = [dict(index=1,topic="sonoff",warn=True,gcode=False)]
 		)
 		
 	##~~ StartupPlugin mixin
