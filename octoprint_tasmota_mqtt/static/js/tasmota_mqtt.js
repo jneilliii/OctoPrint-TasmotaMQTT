@@ -48,7 +48,7 @@ $(function() {
         };
 		
 		self.addRelay = function() {
-			self.arrRelays.push( {'index':ko.observable(++self.arrRelays(self.arrRelays.length-1)),'topic':ko.observable('sonoff'),'warn':ko.observable(true),'gcode':ko.observable(false)} );
+			self.arrRelays.push( {'index':ko.observable(self.arrRelays(self.arrRelays.length-1)+1),'topic':ko.observable('sonoff'),'warn':ko.observable(true),'gcode':ko.observable(false)} );
 		}
 		
 		self.removeRelay = function(data) {
