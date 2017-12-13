@@ -28,13 +28,14 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if helpers:
 			if "mqtt_publish" in helpers:
 				self.mqtt_publish = helpers["mqtt_publish"]
+				self.mqtt_publish("octoprint/plugin/tasmota/pub", "OctoPrint-TasmotaMQTT publishing.")
 			if "mqtt_subscribe" in helpers:
 				self.mqtt_subscribe = helpers["mqtt_subscribe"]
+				self.mqtt_subscribe("%s/stat/POWER" % self._settings.get(["topic"]), self._on_mqtt_subscription)
 			if "mqtt_unsubscribe" in helpers:
 				self.mqtt_unsubscribe = helpers["mqtt_unsubscribe"]
-
-		self.mqtt_publish("octoprint/plugin/tasmota/pub", "OctoPrint-TasmotaMQTT publishing.")
-		self.mqtt_subscribe("%s/stat/POWER" % self._settings.get(["topic"]), self._on_mqtt_subscription)
+		else:
+			self._plugin_manager.send_plugin_message(self._identifier, dict(noMQTT=True))
 
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))

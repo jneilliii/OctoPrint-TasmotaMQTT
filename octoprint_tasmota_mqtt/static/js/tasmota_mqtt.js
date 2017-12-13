@@ -27,7 +27,17 @@ $(function() {
 				self.processing('');
 				return;
 			}
-			self.currentstate(data.currentstate);
+			
+			if data.noMQTT {
+				new PNotify({
+							title: 'Tasmota-MQTT Error',
+							text: 'Missing the <a href="https:\/\/plugins.octoprint.org\/plugins\/mqtt\/" target="_blank">MQTT<\/a> plugin. Please install that plugin to make this plugin operational.',
+							type: 'error',
+							hide: false
+							});
+			} else {				
+				self.currentstate(data.currentstate);
+			}
 			self.processing('');
         };
 		
