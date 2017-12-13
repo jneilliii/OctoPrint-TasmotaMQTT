@@ -90,7 +90,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ WizardPlugin mixin
 			
 	def is_wizard_required(self):
-		if "mqtt" in self._plugin_manager.get_helpers("mqtt"):
+		helpers = self._plugin_manager.get_helpers("mqtt")
+		if "mqtt" in helpers:
 			return False
 		return True 
 	
