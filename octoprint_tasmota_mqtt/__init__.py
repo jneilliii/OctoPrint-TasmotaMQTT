@@ -10,7 +10,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
                          octoprint.plugin.TemplatePlugin,
 						 octoprint.plugin.StartupPlugin,
 						 octoprint.plugin.SimpleApiPlugin,
-						 octoprint.plugin.EventHandlerPlugin):
+						 octoprint.plugin.EventHandlerPlugin,
+						 octoprint.plugin.WizardPlugin):
 
 	##~~ SettingsPlugin mixin
 
@@ -85,6 +86,13 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			relays = self._settings.get(["arrRelays"])
 			relays.append(dict(topic="{topic}".format(**data),warn=True,gcode=False))			
 			self._settings.set(["arrRelays"],relays,True)
+			
+	##~~ WizardPlugin mixin
+			
+	def is_wizard_required(self):
+		if "mqtt" in self._plugin_manager.get_helpers("mqtt"):
+			return False
+		return True 
 	
 	##~~ Softwareupdate hook
 
