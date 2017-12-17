@@ -28,7 +28,7 @@ $(function() {
 				return;
 			}
 			
-			if data.noMQTT {
+			if (data.noMQTT) {
 				new PNotify({
 							title: 'Tasmota-MQTT Error',
 							text: 'Missing the <a href="https:\/\/plugins.octoprint.org\/plugins\/mqtt\/" target="_blank">MQTT<\/a> plugin. Please install that plugin to make this plugin operational.',
