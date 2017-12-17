@@ -11,15 +11,11 @@ $(function() {
         self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[1];
 
-        self.topic = ko.observable();
-		self.currentstate = ko.observable('UNKNOWN');
 		self.processing = ko.observable('');
 		self.arrRelays = ko.observableArray();
 		
 		self.onBeforeBinding = function() {
-			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
-			//self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
         }
 		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {
@@ -35,8 +31,11 @@ $(function() {
 							type: 'error',
 							hide: false
 							});
-			} else {				
-				self.currentstate(data.currentstate);
+			} else {
+				var relay = ko.utils.arrayFirst(self.settings.settings.plugins.tasmota.arrSmartplugs(),function(item){
+					return (item.topic() == data.topic) && (item.relayN() == data.relayN);
+					}) || {'topic':data.topic,'relayN':data.relayN,'currentstate':'UNKNOWN'};
+				relay.currentstate(data.currentstate);
 			}
 			self.processing('');
         };
@@ -50,7 +49,8 @@ $(function() {
                 dataType: "json",
                 data: JSON.stringify({
                     command: "toggleRelay",
-					topic: data.topic()
+					topic: data.topic(),
+					relayN: data.relayN()
                 }),
                 contentType: "application/json; charset=UTF-8"
             }).done(function(){
@@ -61,7 +61,12 @@ $(function() {
 		self.addRelay = function() {
 			var arrRelaysLength = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length;
 			var nextIndex = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays()[arrRelaysLength-1].index()+1;
-			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push( {'index':ko.observable(nextIndex),'topic':ko.observable('sonoff'),'relayN':ko.observable(1),'warn':ko.observable(true),'gcode':ko.observable(false)} );
+			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push( {'index':ko.observable(nextIndex),
+																					'topic':ko.observable('sonoff'),
+																					'relayN':ko.observable(1),
+																					'warn':ko.observable(true),
+																					'gcode':ko.observable(false),
+																					'currentstate':ko.observable('UNKNOWN')} );
 		}
 		
 		self.removeRelay = function(data) {
