@@ -16,7 +16,7 @@
 		</thead>
 		<tbody data-bind='foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays'>
 			<tr data-bind='attr: {title: topic}' class="info">
-				<td><input type="text" class="input-block-level" data-bind='value: topic, uniqueName: true' /></td>
+				<td data-bind='attr: {title: index}'><input type="text" class="input-block-level" data-bind='value: topic, uniqueName: true' /></td>
 				<td style="text-align:center"><input type="checkbox" data-bind="checked: warn, uniqueName: true"/></td>
 				<td style="text-align:center"><input type="checkbox" data-bind="checked: gcode, uniqueName: true"/></td>
 				<td style="text-align:center"><a href="#" class="icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a> </td>
