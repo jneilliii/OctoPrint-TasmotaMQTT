@@ -59,7 +59,8 @@ $(function() {
         };
 		
 		self.addRelay = function() {
-			var nextIndex = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length()+1;
+			var arrRelaysLength = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length();
+			var nextIndex = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays()[arrRelaysLength-1].index()+1;
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push( {'index':ko.observable(nextIndex),'topic':ko.observable('sonoff'),'warn':ko.observable(true),'gcode':ko.observable(false)} );
 		}
 		
