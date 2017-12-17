@@ -64,21 +64,36 @@ $(function() {
         };
 		
 		self.toggleRelay = function(data) {
-			console.log(data);
-			self.processing(data.topic());
-            $.ajax({
-                url: API_BASEURL + "plugin/tasmota_mqtt",
-                type: "POST",
-                dataType: "json",
-                data: JSON.stringify({
-                    command: "toggleRelay",
-					topic: data.topic(),
-					relayN: data.relayN()
-                }),
-                contentType: "application/json; charset=UTF-8"
-            }).done(function(){
-				console.log('command was sent to '+data.topic());
-				});
+			if(data.currentstate()=="UNKNOWN"){
+				$.ajax({
+					url: API_BASEURL + "plugin/tasmota_mqtt",
+					type: "POST",
+					dataType: "json",
+					data: JSON.stringify({
+						command: "checkRelay",
+						topic: data.topic(),
+						relayN: data.relayN()
+					}),
+					contentType: "application/json; charset=UTF-8"
+				}).done(function(){
+					console.log('command was sent to '+data.topic());
+					});	
+			} else {
+				self.processing(data.topic());
+				$.ajax({
+					url: API_BASEURL + "plugin/tasmota_mqtt",
+					type: "POST",
+					dataType: "json",
+					data: JSON.stringify({
+						command: "toggleRelay",
+						topic: data.topic(),
+						relayN: data.relayN()
+					}),
+					contentType: "application/json; charset=UTF-8"
+				}).done(function(){
+					console.log('command was sent to '+data.topic());
+					});
+			}
         };
 		
 		self.addRelay = function() {
