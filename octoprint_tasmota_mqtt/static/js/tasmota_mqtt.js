@@ -18,6 +18,11 @@ $(function() {
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
         }
 		
+		self.onEventSettingsUpdated = function(payload) {
+			self.settingsViewModel.requestData();
+			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
+		}
+		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {
 			if (plugin != "tasmota_mqtt") {
 				self.processing('');
