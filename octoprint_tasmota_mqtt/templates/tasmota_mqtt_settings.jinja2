@@ -1,10 +1,4 @@
 <form class="form-horizontal">
-    <div class="control-group">
-        <label class="control-label">{{ _('Topic') }}</label>
-        <div class="controls">
-            <input type="text" class="input-block-level" data-bind="value: settingsViewModel.settings.plugins.tasmota_mqtt.topic">
-        </div>
-    </div>
 	<table class="table table-condensed" data-bind='visible: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 0'>
 		<thead>
 			<tr>
