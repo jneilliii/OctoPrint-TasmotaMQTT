@@ -10,7 +10,7 @@
 			</tr>
 		</thead>
 		<tbody data-bind='foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays'>
-			<tr data-bind='attr: {title: (topic+"|"+relayN)}' class="info">
+			<tr data-bind='attr: {title: (topic()+"|"+relayN())}' class="info">
 				<td><input type="text" class="input-block-level" data-bind='value: topic, uniqueName: true' /></td>
 				<td><input type="text" class="input-block-level" data-bind='value: relayN, uniqueName: true' /></td>
 				<td style="text-align:center"><input type="checkbox" data-bind="checked: warn, uniqueName: true"/></td>
