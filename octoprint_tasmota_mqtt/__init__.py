@@ -93,6 +93,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 					self.mqtt_publish("%s/cmnd/POWER%s" % (relay["topic"],relay["relayN"]),"")
 					
 		if command == 'checkRelay':
+			self._logger.info("subscribing to {topic} relay {relayN}".format(**data))
+			self.mqtt_subscribe("{topic}/stat/POWER{relayN}".format(**data), self._on_mqtt_subscription, kwargs=dict(top="{topic}".format(**data),relayN="{relayN}".format(**data)))
 			self._logger.info("checking {topic} relay {relayN}".format(**data))
 			self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "")
 			
