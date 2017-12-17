@@ -18,6 +18,20 @@ $(function() {
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
         }
 		
+		self.onAfterBinding = function() {
+            $.ajax({
+                url: API_BASEURL + "plugin/tasmota_mqtt",
+                type: "POST",
+                dataType: "json",
+                data: JSON.stringify({
+                    command: "checkStatus"
+                }),
+                contentType: "application/json; charset=UTF-8"
+            }).done(function(){
+				console.log('Checking status of configured relays.');
+				});
+		}
+		
 		self.onEventSettingsUpdated = function(payload) {
 			self.settingsViewModel.requestData();
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());

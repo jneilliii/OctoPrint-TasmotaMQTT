@@ -76,7 +76,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin mixin
 	
 	def get_api_commands(self):
-		return dict(toggleRelay=["topic","relayN"])
+		return dict(toggleRelay=["topic","relayN"],checkStatus=[])
 		
 	def on_api_command(self, command, data):
 		if not user_permission.can():
@@ -86,6 +86,10 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if command == 'toggleRelay':
 			self._logger.info("toggling {topic}".format(**data))
 			self.mqtt_publish("%s/cmnd/Power%s" % ("{topic}".format(**data),"{relayN}".format(**data)), "TOGGLE")
+			
+		if command == 'checkStatus':
+			for relay in self._settings.get(["arrRelays"]):
+					self.mqtt_publish("%s/cmnd/POWER%s" % (relay["topic"],relay["relayN"]),"")
 			
 	##~~ WizardPlugin mixin
 			
