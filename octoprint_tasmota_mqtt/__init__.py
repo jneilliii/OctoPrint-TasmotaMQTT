@@ -48,7 +48,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ EventHandlerPlugin mixin
 		
 	def on_event(self, event, payload):
-		if event == "ClientOpened":
+		if event == "SettingsUpdated":
 			try:
 				for relay in self._settings.get(["arrRelays"]):
 					self.mqtt_publish("%s/cmnd/POWER%s" % (relay["topic"],relay["relayN"]),"")
