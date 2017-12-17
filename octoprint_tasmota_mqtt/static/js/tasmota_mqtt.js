@@ -32,7 +32,7 @@ $(function() {
 							hide: false
 							});
 			} else {
-				var relay = ko.utils.arrayFirst(self.settings.settings.plugins.tasmota.arrSmartplugs(),function(item){
+				var relay = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays(),function(item){
 					return (item.topic() == data.topic) && (item.relayN() == data.relayN);
 					}) || {'topic':data.topic,'relayN':data.relayN,'currentstate':'UNKNOWN'};
 				relay.currentstate(data.currentstate);
