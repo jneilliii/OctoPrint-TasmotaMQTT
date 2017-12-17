@@ -20,12 +20,6 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			arrRelays = [dict(index=1,topic="sonoff",relayN=1,warn=True,gcode=False,currentstate="UNKNOWN")]
 		)
 		
-	def on_settings_save(self, data):
-		self.mqtt_unsubscribe(self._on_mqtt_subscription)
-		for relay in self._settings.get(["arrRelays"]):
-			self._logger.info("%s/stat/POWER%s" % (relay["topic"],relay["relayN"]))
-			self.mqtt_subscribe("%s/stat/POWER%s" % (relay["topic"],relay["relayN"]), self._on_mqtt_subscription, kwargs=dict(top=relay["topic"],relayN=relay["relayN"]))
-		
 	##~~ StartupPlugin mixin
 	
 	def on_after_startup(self):
@@ -48,7 +42,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
 		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message)
 		# self._settings.set(["%s" % topic],message)
-		# self._settings.save()
+		self._settings.save()
 		self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message))
 		
 	##~~ EventHandlerPlugin mixin
