@@ -90,7 +90,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			
 		if command == 'checkStatus':
 			for relay in self._settings.get(["arrRelays"]):
-				self._logger.info("checking status of {topic} relay {relayN}".format(**data))
+				self._logger.info("checking status of %s relay %s" % (relay["topic"],relay["relayN"]))
 				self.mqtt_publish("%s/cmnd/POWER%s" % (relay["topic"],relay["relayN"]),"")
 					
 		if command == 'checkRelay':
