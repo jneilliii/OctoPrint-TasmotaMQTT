@@ -33,6 +33,7 @@ $(function() {
 		}
 		
 		self.onEventSettingsUpdated = function(payload) {
+			self.onAfterBinding();
 			self.settingsViewModel.requestData();
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
 		}
