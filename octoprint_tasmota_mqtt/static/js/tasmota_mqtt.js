@@ -18,10 +18,6 @@ $(function() {
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
         }
 		
-		self.onEventSettingsUpdated = function(payload) {
-			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
-		}
-		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {
 			if (plugin != "tasmota_mqtt") {
 				self.processing('');
@@ -36,11 +32,14 @@ $(function() {
 							hide: false
 							});
 			} else {
-				relay = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays(),function(item){
+				var relay = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays(),function(item){
 					return (item.topic() == data.topic) && (item.relayN() == data.relayN);
 					}) || {'topic':data.topic,'relayN':data.relayN,'currentstate':'UNKNOWN'};
-				console.log(relay)
-				relay.currentstate(data.currentstate);
+				if(relay.currentstate != data.currentstate) {
+					relay.currentstate(data.currentstate);
+					self.settingsViewModel.saveData();
+				}
+				
 			}
 			self.processing('');
         };

@@ -42,7 +42,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
 		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message)
 		# self._settings.set(["%s" % topic],message)
-		self._settings.save()
+		# self._settings.save()
 		self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message))
 		
 	##~~ EventHandlerPlugin mixin
