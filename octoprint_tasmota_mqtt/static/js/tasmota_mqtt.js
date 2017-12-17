@@ -110,6 +110,19 @@ $(function() {
 		self.removeRelay = function(data) {
 			console.log(data);
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.remove(data);
+			$.ajax({
+					url: API_BASEURL + "plugin/tasmota_mqtt",
+					type: "POST",
+					dataType: "json",
+					data: JSON.stringify({
+						command: "removeRelay",
+						topic: data.topic(),
+						relayN: data.relayN()
+					}),
+					contentType: "application/json; charset=UTF-8"
+				}).done(function(){
+					console.log('removing relay subscription for '+data.topic()+' relay '+data.relayN());
+					});
 		}
     }
 
