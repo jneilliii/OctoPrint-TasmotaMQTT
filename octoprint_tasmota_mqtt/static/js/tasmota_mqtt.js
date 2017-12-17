@@ -39,6 +39,7 @@ $(function() {
 				relay = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays(),function(item){
 					return (item.topic() == data.topic) && (item.relayN() == data.relayN);
 					}) || {'topic':data.topic,'relayN':data.relayN,'currentstate':'UNKNOWN'};
+				console.log(relay)
 				relay.currentstate(data.currentstate);
 			}
 			self.processing('');
