@@ -9,14 +9,16 @@
 		<thead>
 			<tr>
 				<td style="text-align:center">Topic</td>
+				<td style="text-align:center">Relay #</td>
 				<td style="text-align:center">Warn</td>
 				<td style="text-align:center">GCODE</td>
 				<td style="text-align:center"><a href="#" class="btn btn-mini icon-plus" data-bind="click: addRelay"></a></td>
 			</tr>
 		</thead>
 		<tbody data-bind='foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays'>
-			<tr data-bind='attr: {title: topic}' class="info">
-				<td data-bind='attr: {title: index}'><input type="text" class="input-block-level" data-bind='value: topic, uniqueName: true' /></td>
+			<tr data-bind='attr: {title: (topic+"|"+relayN)}' class="info">
+				<td><input type="text" class="input-block-level" data-bind='value: topic, uniqueName: true' /></td>
+				<td><input type="text" class="input-block-level" data-bind='value: relayN, uniqueName: true' /></td>
 				<td style="text-align:center"><input type="checkbox" data-bind="checked: warn, uniqueName: true"/></td>
 				<td style="text-align:center"><input type="checkbox" data-bind="checked: gcode, uniqueName: true"/></td>
 				<td style="text-align:center"><a href="#" class="icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a> </td>
