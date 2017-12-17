@@ -48,7 +48,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ EventHandlerPlugin mixin
 		
 	def on_event(self, event, payload):
-		if event == "SettingsUpdated":
+		if event == "WHERE":
 			try:
 				self.mqtt_unsubscribe(self._on_mqtt_subscription)
 				for relay in self._settings.get(["arrRelays"]):
