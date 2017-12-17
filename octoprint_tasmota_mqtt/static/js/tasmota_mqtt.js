@@ -11,7 +11,7 @@ $(function() {
         self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[1];
 
-		self.processing = ko.observable('');
+		self.processing = ko.observableArray([]);
 		self.arrRelays = ko.observableArray();
 		
 		self.onBeforeBinding = function() {
@@ -39,7 +39,7 @@ $(function() {
 		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {
 			if (plugin != "tasmota_mqtt") {
-				self.processing('');
+				//self.processing('');
 				return;
 			}
 			console.log(data);
@@ -60,7 +60,7 @@ $(function() {
 				}
 				
 			}
-			self.processing('');
+			self.processing.remove(data.topic + '|' + data.relayN);
         };
 		
 		self.toggleRelay = function(data) {
@@ -79,7 +79,7 @@ $(function() {
 					console.log('command was sent to '+data.topic());
 					});	
 			} else {
-				self.processing(data.topic());
+				self.processing.push(data.topic() + '|' + data.relayN());
 				$.ajax({
 					url: API_BASEURL + "plugin/tasmota_mqtt",
 					type: "POST",
