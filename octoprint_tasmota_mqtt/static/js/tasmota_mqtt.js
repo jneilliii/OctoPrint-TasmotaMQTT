@@ -56,7 +56,7 @@ $(function() {
 					}) || {'topic':data.topic,'relayN':data.relayN,'currentstate':'UNKNOWN'};
 				if(relay.currentstate != data.currentstate) {
 					relay.currentstate(data.currentstate);
-					self.settingsViewModel.saveData();
+					//self.settingsViewModel.saveData();
 				}
 				
 			}

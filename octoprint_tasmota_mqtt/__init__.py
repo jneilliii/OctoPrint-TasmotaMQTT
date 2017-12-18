@@ -43,7 +43,18 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message)
 		# self._settings.set(["%s" % topic],message)
 		# self._settings.save()
-		self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message))
+		# self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message))	
+		newrelays = []
+		bolRelayStateChanged = False
+		for relay in self._settings.get(["arrRelays"]):
+			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message:
+				bolRelayStateChanged = True
+				relay["currentstate"] = message
+			newrelays.append(relay)
+			
+		if bolRelayStateChanged:
+			self._settings.set(["arrRelays"],newrelays)
+			self._settings.save()
 		
 	##~~ EventHandlerPlugin mixin
 		
