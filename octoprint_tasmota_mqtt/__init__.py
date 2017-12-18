@@ -50,6 +50,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message:
 				bolRelayStateChanged = True
 				relay["currentstate"] = message
+				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message))
 			newrelays.append(relay)
 			
 		if bolRelayStateChanged:
