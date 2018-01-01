@@ -24,22 +24,17 @@
 	<div id="TasmotaMQTTRelayEditor" data-bind="with: selectedRelay" class="modal hide fade">
 	    <div class="modal-header">
 			<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
-			<h3>OctoPrint-TasmotaMQTT</h3>
+			<h3>Editing <!--ko text: topic-->|<!--ko text: relayN--></h3>
 		</div>
 		<div class="modal-body">
 			<div class="control-group">
 				<div class="controls">
-					<input type="text" class="input-block-level" data-bind="value: topic"/>
-				</div>
-			</div>
-			<div class="control-group">
-				<div class="controls">
-					<input type="text" class="input-block-level" data-bind="value: relayN"/>
+					<input type="text" class="input-block-level" data-bind="value: index" />
 				</div>
 			</div>
 		</div>
 		<div class="modal-footer">
-			<a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Cancel') }}</a>
+			<a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
 		</div>
 	</div>
 </form>
