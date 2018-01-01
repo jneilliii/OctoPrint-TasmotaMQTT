@@ -126,7 +126,8 @@ $(function() {
 					});
 		}
 		
-		self.editRelay = function(data) {			
+		self.editRelay = function(data) {
+			console.log(data);
 			self.selectedRelay = data;
 			$("#TasmotaMQTTRelayEditor").modal("show");
 		}
