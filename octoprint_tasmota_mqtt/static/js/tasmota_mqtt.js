@@ -14,7 +14,6 @@ $(function() {
 		self.processing = ko.observableArray([]);
 		self.arrRelays = ko.observableArray();
 		self.selectedRelay = ko.observable();
-		self.processing = ko.observable(false);
 		
 		self.onBeforeBinding = function() {
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
@@ -129,7 +128,6 @@ $(function() {
 		
 		self.editRelay = function(data) {			
 			self.selectedRelay = data;
-			self.processing(true);
 			$("#TasmotaMQTTRelayEditor").modal("show");
 		}
     }
