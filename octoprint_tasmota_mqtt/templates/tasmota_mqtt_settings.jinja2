@@ -15,7 +15,9 @@
 				<td><input type="text" class="input-block-level" data-bind='value: relayN, uniqueName: true' /></td>
 				<td style="text-align:center"><input type="checkbox" data-bind="checked: warn, uniqueName: true"/></td>
 				<td style="text-align:center"><input type="checkbox" data-bind="checked: gcode, uniqueName: true"/></td>
-				<td style="text-align:center"><a href="#" class="icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a> </td>
+				<td style="text-align:center">
+					<a href="#" class="icon-pencil" data-bind="click: function() { new TasmotaMQTTViewModelRelayEditor($data); }"></a>
+					<a href="#" class="icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a> </td>
 			</tr>
 		</tbody>
 	</table>

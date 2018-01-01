@@ -124,7 +124,16 @@ $(function() {
 					console.log('removing relay subscription for '+data.topic()+' relay '+data.relayN());
 					});
 		}
+		
+		self.showRelayEditor = function(data) {
+			self.relayEditor = new TasmotaMQTTViewModelRelayEditor(data);
+		}
     }
+	
+	function TasmotaMQTTViewModelRelayEditor(relay) {
+		var self = this;
+		
+	}
 
     /* view model class, parameters for constructor, container to bind to
      * Please see http://docs.octoprint.org/en/master/plugins/viewmodels.html#registering-custom-viewmodels for more details
