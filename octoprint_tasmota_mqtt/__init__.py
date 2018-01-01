@@ -17,7 +17,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_settings_defaults(self):
 		return dict(
-			arrRelays = [dict(index=1,topic="sonoff",relayN=1,warn=True,gcode=False,currentstate="UNKNOWN",gcodeOnDelay=0)]
+			arrRelays = [dict(index=1,topic="sonoff",relayN=1,warn=True,warnPrinting=True,gcode=False,currentstate="UNKNOWN",gcodeOnDelay=0,gcodeOffDelay=0)]
 		)
 		
 	def get_settings_version(self):

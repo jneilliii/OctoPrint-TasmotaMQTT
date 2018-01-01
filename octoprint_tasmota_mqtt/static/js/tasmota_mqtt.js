@@ -104,7 +104,10 @@ $(function() {
 								'topic':ko.observable('sonoff'),
 								'relayN':ko.observable(1),
 								'warn':ko.observable(true),
+								'warnPrinting':ko.observable(true),
 								'gcode':ko.observable(false),
+								'gcodeOnDelay':ko.observable(0),
+								'gcodeOffDelay':ko.observable(0),
 								'currentstate':ko.observable('UNKNOWN')} );
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push(self.selectedRelay());
 			$("#TasmotaMQTTRelayEditor").modal("show");																							
