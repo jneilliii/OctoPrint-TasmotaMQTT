@@ -1,18 +1,17 @@
+<h4>TasmotaMQTT Settings</h4>
 <form class="form-horizontal">
 	<table class="table table-condensed" data-bind='visible: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 0'>
 		<thead>
 			<tr>
-				<td style="text-align:center">Topic</td>
-				<td style="text-align:center">Relay #</td>
+				<td style="text-align:center">Topic | Relay #</td>
 				<td style="text-align:center">Warn</td>
 				<td style="text-align:center">GCODE</td>
 				<td style="text-align:center"><a href="#" class="btn btn-mini icon-plus" data-bind="click: addRelay"></a></td>
 			</tr>
 		</thead>
 		<tbody data-bind='foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays'>
-			<tr data-bind='attr: {title: (topic()+"|"+relayN())}' class="info">
-				<td><!--ko text: topic--><!--/ko--></td>
-				<td><!--ko text: relayN--><!--/ko--></td>
+			<tr data-bind='attr: {title: (topic()+"|"+relayN())}'>
+				<td><!--ko text: topic--><!--/ko--> | <!--ko text: relayN--><!--/ko--></td>
 				<td style="text-align:center"><i class="icon" data-bind="css: {'icon-check': warn(),'icon-check-empty': !warn()}"/></td>
 				<td style="text-align:center"><i class="icon" data-bind="css: {'icon-check': gcode(),'icon-check-empty': !gcode()}"/></td>
 				<td style="text-align:center">
@@ -24,25 +23,29 @@
 	<div id="TasmotaMQTTRelayEditor" data-bind="with: selectedRelay" class="modal hide fade">
 	    <div class="modal-header">
 			<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
-			<h3>Editing <!--ko text: topic--><!--/ko-->|<!--ko text: relayN--><!--/ko--></h3>
+			<h3>Relay Editor</h3>
 		</div>
 		<div class="modal-body">
 			<div class="control-group">
+				<label class="control-label">{{ _('Topic') }}</label>
 				<div class="controls">
 					<input type="text" class="input-block-level" data-bind="value: topic" />
 				</div>
 			</div>
 			<div class="control-group">
+				<label class="control-label">{{ _('RelayN') }}</label>
 				<div class="controls">
 					<input type="text" class="input-block-level" data-bind="value: relayN" />
 				</div>
 			</div>
 			<div class="control-group">
+				<label class="control-label">{{ _('Warn') }}</label>
 				<div class="controls">
 					<input type="checkbox" data-bind="checked: warn, uniqueName: true"/>
 				</div>
 			</div>
 			<div class="control-group">
+				<label class="control-label">{{ _('GCODE') }}</label>
 				<div class="controls">
 					<input type="checkbox" data-bind="checked: gcode, uniqueName: true"/>
 				</div>
