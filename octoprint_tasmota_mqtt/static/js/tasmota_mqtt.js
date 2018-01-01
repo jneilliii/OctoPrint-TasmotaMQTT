@@ -106,7 +106,8 @@ $(function() {
 								'warn':ko.observable(true),
 								'gcode':ko.observable(false),
 								'currentstate':ko.observable('UNKNOWN')} );
-			$("#TasmotaMQTTRelayEditor").modal("show");
+			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push(self.selectedRelay());
+			$("#TasmotaMQTTRelayEditor").modal("show");																							
 		}
 		
 		self.removeRelay = function(data) {
