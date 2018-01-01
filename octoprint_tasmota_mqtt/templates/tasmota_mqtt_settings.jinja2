@@ -11,10 +11,10 @@
 		</thead>
 		<tbody data-bind='foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays'>
 			<tr data-bind='attr: {title: (topic()+"|"+relayN())}' class="info">
-				<td><input type="text" class="input-block-level" data-bind='value: topic, uniqueName: true' /></td>
-				<td><input type="text" class="input-block-level" data-bind='value: relayN, uniqueName: true' /></td>
-				<td style="text-align:center"><i class="icon" data-bind="css: {'icon-check-square-o': warn,'icon-square-o': !warn}"/></td>
-				<td style="text-align:center"><i class="icon" data-bind="css: {'icon-check-square-o': gcode,'icon-square-o': !gcode}"/></td>
+				<td><!--ko text: topic--><!--/ko--></td>
+				<td><!--ko text: relayN--><!--/ko--></td>
+				<td style="text-align:center"><i class="icon" data-bind="css: {'icon-check': warn(),'icon-check-empty': !warn()}"/></td>
+				<td style="text-align:center"><i class="icon" data-bind="css: {'icon-check': gcode(),'icon-check-empty': !gcode()}"/></td>
 				<td style="text-align:center">
 					<a href="#" class="icon-pencil" data-bind="click: $root.editRelay"></a>
 					<a href="#" class="icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a> </td>
