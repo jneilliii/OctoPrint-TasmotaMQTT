@@ -45,9 +45,11 @@
 				</div>
 			</div>
 			<div class="control-group">
-				<label class="control-label">{{ _('GCODE') }}</label>
 				<div class="controls">
+					<label class="control-label">{{ _('GCODE') }}</label>
 					<input type="checkbox" data-bind="checked: gcode, uniqueName: true"/>
+					<label class="control-label">{{ _('GCODE On Delay') }}</label>
+					<input type="text" data-bind="value: gcodeOnDelay"  class="input" />
 				</div>
 			</div>
 		</div>
