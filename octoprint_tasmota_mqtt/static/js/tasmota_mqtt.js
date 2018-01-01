@@ -13,6 +13,8 @@ $(function() {
 
 		self.processing = ko.observableArray([]);
 		self.arrRelays = ko.observableArray();
+		self.selectedRelay = ko.observable();
+		self.processing = ko.observable(false);
 		
 		self.onBeforeBinding = function() {
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
@@ -125,15 +127,12 @@ $(function() {
 					});
 		}
 		
-		self.showRelayEditor = function(data) {
-			self.relayEditor = new TasmotaMQTTViewModelRelayEditor(data);
+		self.editRelay = function(data) {			
+			self.selectedRelay = data;
+			self.processing(true);
+			$("#TasmotaMQTTRelayEditor").modal("show");
 		}
     }
-	
-	function TasmotaMQTTViewModelRelayEditor(relay) {
-		var self = this;
-		
-	}
 
     /* view model class, parameters for constructor, container to bind to
      * Please see http://docs.octoprint.org/en/master/plugins/viewmodels.html#registering-custom-viewmodels for more details
