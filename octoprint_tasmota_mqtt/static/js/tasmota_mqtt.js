@@ -112,6 +112,12 @@ $(function() {
 								'connectOnDelay':ko.observable(15),
 								'disconnect':ko.observable(false),
 								'disconnectOffDelay':ko.observable(0),
+								'sysCmdOn':ko.observable(false),
+								'sysCmdRunOn':ko.observable(""),
+								'sysCmdOnDelay':ko.observable(0),
+								'sysCmdOff':ko.observable(false),
+								'sysCmdRunOff':ko.observable(""),
+								'sysCmdOffDelay':ko.observable(0),
 								'currentstate':ko.observable('UNKNOWN')} );
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push(self.selectedRelay());
 			$("#TasmotaMQTTRelayEditor").modal("show");																							
