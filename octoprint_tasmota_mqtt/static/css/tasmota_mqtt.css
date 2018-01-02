@@ -12,4 +12,5 @@
 
 #TasmotaMQTTRelayEditor table th, #TasmotaMQTTRelayEditor table td {
 	border-top: none;
+	vertical-align: middle;
 }
