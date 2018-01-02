@@ -108,6 +108,10 @@ $(function() {
 								'gcode':ko.observable(false),
 								'gcodeOnDelay':ko.observable(0),
 								'gcodeOffDelay':ko.observable(0),
+								'connect':ko.observable(false),
+								'connectOnDelay':ko.observable(15),
+								'disconnect':ko.observable(false),
+								'disconnectOffDelay':ko.observable(0),
 								'currentstate':ko.observable('UNKNOWN')} );
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push(self.selectedRelay());
 			$("#TasmotaMQTTRelayEditor").modal("show");																							
