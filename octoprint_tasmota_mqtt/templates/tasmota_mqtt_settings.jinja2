@@ -4,16 +4,21 @@
 		<thead>
 			<tr>
 				<td style="text-align:center">Topic | Relay #</td>
-				<td style="text-align:center">Warn</td>
-				<td style="text-align:center">GCODE</td>
+				<td style="text-align:center">Options</td>
 				<td style="text-align:center"><a href="#" class="btn btn-mini icon-plus" data-bind="click: addRelay"></a></td>
 			</tr>
 		</thead>
 		<tbody data-bind='foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays'>
 			<tr data-bind='attr: {title: (topic()+"|"+relayN())}'>
 				<td><!--ko text: topic--><!--/ko--> | <!--ko text: relayN--><!--/ko--></td>
-				<td style="text-align:center"><i class="icon" data-bind="css: {'icon-check': warn(),'icon-check-empty': !warn()}"/></td>
-				<td style="text-align:center"><i class="icon" data-bind="css: {'icon-check': gcode(),'icon-check-empty': !gcode()}"/></td>
+				<td style="text-align:center">
+					<i class="icon" data-bind="css: {'icon-check': warn(),'icon-check-empty': !warn()}" title="Warning Prompt" />
+					<i class="icon" data-bind="css: {'icon-check': warnPrinting(),'icon-check-empty': !warnPrinting()}" title="Warn While Printing" />
+					<i class="icon" data-bind="css: {'icon-check': connect(),'icon-check-empty': !connect()}" title="Auto Connect" />
+					<i class="icon" data-bind="css: {'icon-check': disconnect(),'icon-check-empty': !disconnect()}" title="Auto Disconnect" />
+					<i class="icon" data-bind="css: {'icon-check': gcode(),'icon-check-empty': !gcode()}" title="GCODE Trigger" />
+					<i class="icon" data-bind="css: {'icon-check': sysCmdOn(),'icon-check-empty': !sysCmdOn()}" title="Run System Command On" />
+					<i class="icon" data-bind="css: {'icon-check': sysCmdOff(),'icon-check-empty': !sysCmdOff()}" title="Run System Command Off" /></td>
 				<td style="text-align:center">
 					<a href="#" class="icon-pencil" data-bind="click: $root.editRelay"></a>
 					<a href="#" class="icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a> </td>
@@ -37,28 +42,22 @@
 					<td></td>
 				</tr>
 				<tr>
+					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: connect"/> Auto Connect</label><input type="text" data-bind="value: connectOnDelay,visible: connect" class="input input-small" /></div></td>
+					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: disconnect"/> Auto Disconnect</label><input type="text" data-bind="value: disconnectOffDelay,visible: disconnect" class="input input-small" /></div></td>
+					<td></td>
+				</tr>
+				<tr>
 					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: gcode"/> GCODE Trigger</label></div></td>
-					<td><div class="controls" data-bind="visible: gcode"><label class="control-label">{{ _('GCODE On Delay') }}</label><input type="text" data-bind="value: gcodeOnDelay"  class="input input-small" /></div></td>
-					<td><div class="controls" data-bind="visible: gcode"><label class="control-label">{{ _('GCODE Off Delay') }}</label><input type="text" data-bind="value: gcodeOffDelay"  class="input input-small" /></div></td>
-				</tr>
-				<tr>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: connect"/> Auto Connect</label></div></td>
-					<td><div class="controls" data-bind="visible: connect"><label class="control-label">{{ _('Connect On Delay') }}</label><input type="text" data-bind="value: connectOnDelay"  class="input input-small" /></div></td>
-					<td></td>
-				</tr>
-				<tr>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: disconnect"/> Auto Disconnect</label></div></td>
-					<td><div class="controls" data-bind="visible: disconnect"><label class="control-label">{{ _('Disconnect Off Delay') }}</label><input type="text" data-bind="value: disconnectOffDelay"  class="input input-small" /></div></td>
-					<td></td>
+					<td><div class="controls" data-bind="visible: gcode"><label class="control-label">{{ _('GCODE On Delay') }}</label><input type="text" data-bind="value: gcodeOnDelay" class="input input-small" /></div></td>
+					<td><div class="controls" data-bind="visible: gcode"><label class="control-label">{{ _('GCODE Off Delay') }}</label><input type="text" data-bind="value: gcodeOffDelay" class="input input-small" /></div></td>
 				</tr>
 				<tr>
 					<td colspan="2"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOn"/> Run System Command On</label><input type="text" data-bind="value: sysCmdRunOn,visible: sysCmdOn" class="input" /></div></td>
-					<td><div class="controls" data-bind="visible: sysCmdOn"><label class="control-label">{{ _('System Command On Delay') }}</label><input type="text" data-bind="value: sysCmdOnDelay"  class="input input-small" /></div></td>
+					<td><div class="controls" data-bind="visible: sysCmdOn"><label class="control-label">{{ _('Delay') }}</label><input type="text" data-bind="value: sysCmdOnDelay"  class="input input-small" /></div></td>
 				</tr>
 				<tr>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOff"/> Run System Command Off</label></div></td>
-					<td><div class="controls" data-bind="visible: sysCmdOff"><label class="control-label">{{ _('System Command Off') }}</label><input type="text" data-bind="value: sysCmdRunOff"  class="input" /></div></td>
-					<td><div class="controls" data-bind="visible: sysCmdOff"><label class="control-label">{{ _('System Command Off Delay') }}</label><input type="text" data-bind="value: sysCmdOffDelay"  class="input input-small" /></div></td>
+					<td colspan="2"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOff"/> Run System Command Off</label><input type="text" data-bind="value: sysCmdRunOff,visible: sysCmdOff" class="input" /></div></td>
+					<td><div class="controls" data-bind="visible: sysCmdOff"><label class="control-label">{{ _('Delay') }}</label><input type="text" data-bind="value: sysCmdOffDelay"  class="input input-small" /></div></td>
 				</tr>
 			</table>
 		</div>
