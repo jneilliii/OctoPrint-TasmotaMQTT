@@ -52,14 +52,13 @@
 					<td></td>
 				</tr>
 				<tr>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOn"/> Run System Command On</label></div></td>
-					<td><div class="controls" data-bind="visible: sysCmdOn"><label class="control-label">{{ _('System Command On') }}</label><input type="text" data-bind="value: sysCmdRunOn"  class="input" /></div></td>
+					<td colspan="2"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOn"/> Run System Command On</label></div><input type="text" data-bind="value: sysCmdRunOn,visible: sysCmdOn" class="input" /></td>
 					<td><div class="controls" data-bind="visible: sysCmdOn"><label class="control-label">{{ _('System Command On Delay') }}</label><input type="text" data-bind="value: sysCmdOnDelay"  class="input input-small" /></div></td>
 				</tr>
 				<tr>
 					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOff"/> Run System Command Off</label></div></td>
 					<td><div class="controls" data-bind="visible: sysCmdOff"><label class="control-label">{{ _('System Command Off') }}</label><input type="text" data-bind="value: sysCmdRunOff"  class="input" /></div></td>
-					<td><div class="controls" data-bind="visible: sysCmdOff"><label class="control-label">{{ _('System Command On Delay') }}</label><input type="text" data-bind="value: sysCmdOffDelay"  class="input input-small" /></div></td>
+					<td><div class="controls" data-bind="visible: sysCmdOff"><label class="control-label">{{ _('System Command Off Delay') }}</label><input type="text" data-bind="value: sysCmdOffDelay"  class="input input-small" /></div></td>
 				</tr>
 			</table>
 		</div>
