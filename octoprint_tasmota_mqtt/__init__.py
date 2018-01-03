@@ -3,7 +3,9 @@ from __future__ import absolute_import
 
 import octoprint.plugin
 from octoprint.server import user_permission
-
+import threading
+import time
+import os
 
 class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
                          octoprint.plugin.AssetPlugin,
@@ -105,7 +107,24 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			
 		if command == 'toggleRelay':
 			self._logger.info("toggling {topic} relay {relayN}".format(**data))
-			self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "TOGGLE")
+			for relay in self._settings.get(["arrRelays"]):
+				if relay["topic"] == "{topic}".format(**data) and relay["relayN"] == "{relayN}".format(**data):
+					if relay["currentstate"] == "ON":
+						if relay["sysCmdOff"]:
+							t = threading.Timer(int(relay["sysCmdOffDelay"]),os.system,args=[relay["sysCmdRunOff"]])
+							t.start()
+						if relay["disconnect"]:
+							self._printer.disconnect()
+							time.sleep(int(relay["disconnectOffDelay"]))
+						self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "OFF")
+					if relay["currentstate"] == "OFF":
+						self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "ON")
+						if relay["sysCmdOn"]:
+							t = threading.Timer(int(relay["sysCmdOnDelay"]),os.system,args=[relay["sysCmdRunOn"]])
+							t.start()
+						if relay["connect"]:
+							t = threading.Timer(int(relay["connectOnDelay"]),self._printer.connect)
+							t.start()				
 			
 		if command == 'checkStatus':
 			for relay in self._settings.get(["arrRelays"]):
