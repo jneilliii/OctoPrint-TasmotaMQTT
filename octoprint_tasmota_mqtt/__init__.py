@@ -19,7 +19,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_settings_defaults(self):
 		return dict(
-			arrRelays = [dict(index=1,topic="sonoff",relayN=1,warn=True,warnPrinting=True,gcode=False,currentstate="UNKNOWN",gcodeOnDelay=0,gcodeOffDelay=0,connect=False,connectOnDelay=15,disconnect=False,disconnectOffDelay=0,sysCmdOn=False,sysCmdRunOn="",sysCmdOnDelay=0,sysCmdOff=False,sysCmdRunOff="",sysCmdOffDelay=0)]
+			arrRelays = [dict(index=1,topic="sonoff",relayN="1",warn=True,warnPrinting=True,gcode=False,currentstate="UNKNOWN",gcodeOnDelay=0,gcodeOffDelay=0,connect=False,connectOnDelay=15,disconnect=False,disconnectOffDelay=0,sysCmdOn=False,sysCmdRunOn="",sysCmdOnDelay=0,sysCmdOff=False,sysCmdRunOff="",sysCmdOffDelay=0)]
 		)
 		
 	def get_settings_version(self):
@@ -50,9 +50,6 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
 		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message)
-		# self._settings.set(["%s" % topic],message)
-		# self._settings.save()
-		# self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message))	
 		newrelays = []
 		bolRelayStateChanged = False
 		for relay in self._settings.get(["arrRelays"]):

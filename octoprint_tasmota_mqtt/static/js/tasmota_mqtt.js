@@ -102,7 +102,7 @@ $(function() {
 			var nextIndex = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays()[arrRelaysLength-1].index()+1;
 			self.selectedRelay( {'index':ko.observable(nextIndex),
 								'topic':ko.observable('sonoff'),
-								'relayN':ko.observable(1),
+								'relayN':ko.observable('1'),
 								'warn':ko.observable(true),
 								'warnPrinting':ko.observable(true),
 								'gcode':ko.observable(false),
