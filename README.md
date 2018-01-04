@@ -1,6 +1,6 @@
 # OctoPrint-TasmotaMQTT
 
-**TODO:** Describe what your plugin does.
+This plugin allows the control of Tasmota devices from within OctoPrint.
 
 ## Setup
 

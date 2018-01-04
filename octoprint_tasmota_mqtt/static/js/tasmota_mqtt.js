@@ -28,9 +28,7 @@ $(function() {
                     command: "checkStatus"
                 }),
                 contentType: "application/json; charset=UTF-8"
-            }).done(function(){
-				console.log('Checking status of configured relays.');
-				});
+            });
 		}
 		
 		self.onEventSettingsUpdated = function(payload) {
@@ -40,7 +38,6 @@ $(function() {
 		
 		self.onDataUpdaterPluginMessage = function(plugin, data) {
 			if (plugin != "tasmota_mqtt") {
-				//self.processing('');
 				return;
 			}
 			console.log(data);
@@ -57,7 +54,6 @@ $(function() {
 					}) || {'topic':data.topic,'relayN':data.relayN,'currentstate':'UNKNOWN'};
 				if(relay.currentstate != data.currentstate) {
 					relay.currentstate(data.currentstate);
-					//self.settingsViewModel.saveData();
 				}
 				
 			}
@@ -76,9 +72,7 @@ $(function() {
 						relayN: data.relayN()
 					}),
 					contentType: "application/json; charset=UTF-8"
-				}).done(function(){
-					console.log('command was sent to '+data.topic());
-					});	
+				});	
 			} else {
 				self.processing.push(data.topic() + '|' + data.relayN());
 				$.ajax({
@@ -91,9 +85,7 @@ $(function() {
 						relayN: data.relayN()
 					}),
 					contentType: "application/json; charset=UTF-8"
-				}).done(function(){
-					console.log('command was sent to '+data.topic());
-					});
+				});
 			}
         };
 		
@@ -124,7 +116,6 @@ $(function() {
 		}
 		
 		self.removeRelay = function(data) {
-			console.log(data);
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.remove(data);
 			$.ajax({
 					url: API_BASEURL + "plugin/tasmota_mqtt",
@@ -136,9 +127,7 @@ $(function() {
 						relayN: data.relayN()
 					}),
 					contentType: "application/json; charset=UTF-8"
-				}).done(function(){
-					console.log('removing relay subscription for '+data.topic()+' relay '+data.relayN());
-					});
+				});
 		}
 		
 		self.editRelay = function(data) {
