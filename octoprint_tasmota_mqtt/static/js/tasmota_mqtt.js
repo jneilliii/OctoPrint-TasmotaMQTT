@@ -40,7 +40,6 @@ $(function() {
 			if (plugin != "tasmota_mqtt") {
 				return;
 			}
-			console.log(data);
 			if (data.noMQTT) {
 				new PNotify({
 							title: 'Tasmota-MQTT Error',
