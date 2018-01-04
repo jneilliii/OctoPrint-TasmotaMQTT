@@ -147,18 +147,15 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				for relay in self._settings.get(["arrRelays"]):
 					if relay["topic"].upper() == topic.upper() and relay["relayN"] == relayN and relay["gcode"]:
 						if cmd.startswith("M80"):
-							t = threading.Timer(int(relay["gcodeOnDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (topic,relayN), "ON"))
+							t = threading.Timer(int(relay["gcodeOnDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (relay["topic"],relay["relayN"]), "ON"))
 							t.start()
 							return
 						elif cmd.startswith("M81"):
-							t = threading.Timer(int(relay["gcodeOffDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (topic,relayN), "OFF"))
+							t = threading.Timer(int(relay["gcodeOffDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (relay["topic"],relay["relayN"]), "OFF"))
 							t.start()
 							return
 						else:
 							return
-					else:
-						self._logger.info(relay)
-				return
 			
 	##~~ WizardPlugin mixin
 			
