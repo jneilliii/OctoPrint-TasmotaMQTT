@@ -95,6 +95,7 @@ $(function() {
 			self.selectedRelay( {'index':ko.observable(nextIndex),
 								'topic':ko.observable('sonoff'),
 								'relayN':ko.observable('1'),
+								'icon':ko.observable('icon-bolt'),
 								'warn':ko.observable(true),
 								'warnPrinting':ko.observable(true),
 								'gcode':ko.observable(false),
