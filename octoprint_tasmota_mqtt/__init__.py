@@ -147,7 +147,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relayN = cmd.split()[2]	
 				for relay in self._settings.get(["arrRelays"]):
 					self._logger.info(relay)
-					if relay["topic"] == topic and relay["relayN"] == relayN and relay["gcode"]:
+					if relay["topic"].upper() == topic.upper() and relay["relayN"] == relayN and relay["gcode"]:
 						if cmd.startswith("M80"):
 							t = threading.Timer(int(relay["gcodeOnDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (topic,relayN), "ON"))
 							t.start()
