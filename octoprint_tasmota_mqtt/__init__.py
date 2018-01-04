@@ -137,6 +137,26 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if command == 'removeRelay':
 			self.mqtt_unsubscribe(self._on_mqtt_subscription,topic="{topic}/stat/POWER{relayN}".format(**data))
 			
+	##~~ Gcode processing hook
+	
+	def processGCODE(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+		if gcode:
+			if cmd.startswith("M8") and cmd.count(" ") >= 2:
+				topic = cmd.split()[1]
+				relayN = cmd.split()[2]	
+				for relay in self._settings.get(["arrRelays"]):
+					if relay["topic"] == topic and relay["relayN"] == relayN and relay["gcode"]:
+						if cmd.startswith("M80"):
+							t = threading.Timer(int(relay["gcodeOnDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (topic,relayN), "ON"))
+							t.start()
+							return
+						elif cmd.startswith("M81"):
+							t = threading.Timer(int(relay["gcodeOffDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (topic,relayN), "OFF"))
+							t.start()
+							return
+						else:
+							return
+			
 	##~~ WizardPlugin mixin
 			
 	def is_wizard_required(self):
@@ -179,6 +199,7 @@ def __plugin_load__():
 
 	global __plugin_hooks__
 	__plugin_hooks__ = {
+		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
 
