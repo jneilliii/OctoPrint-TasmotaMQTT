@@ -97,6 +97,10 @@ $(function() {
 			}
 		}
 		
+		self.cancelClick = function(data) {
+			self.processing.remove(data.topic + '|' + data.relayN);
+		}
+		
 		self.toggleRelay = function(data) {
 			$("#TasmotaMQTTWarning").modal("hide");
 			$.ajax({
