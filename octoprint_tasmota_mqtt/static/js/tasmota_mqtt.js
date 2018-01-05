@@ -14,9 +14,11 @@ $(function() {
 		self.processing = ko.observableArray([]);
 		self.arrRelays = ko.observableArray();
 		self.selectedRelay = ko.observable();
+		self.isPrinting = ko.observable();
 		
 		self.onBeforeBinding = function() {
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
+			self.isPrinting(self.settingsViewModel.settings.)
         }
 		
 		self.onAfterBinding = function() {
@@ -74,6 +76,8 @@ $(function() {
 				});	
 			} else {
 				self.processing.push(data.topic() + '|' + data.relayN());
+				self.selectedRelay(data);
+				$("#TasmotaMQTTWarning").modal("show");
 				$.ajax({
 					url: API_BASEURL + "plugin/tasmota_mqtt",
 					type: "POST",
