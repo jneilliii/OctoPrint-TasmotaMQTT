@@ -66,8 +66,10 @@ $(function() {
 				case "ON":
 					self.selectedRelay(data);
 					$("#TasmotaMQTTWarning").modal("show");
+					break;
 				case "OFF":
 					self.toggleRelay(data);
+					break;
 				default:
 					$.ajax({
 						url: API_BASEURL + "plugin/tasmota_mqtt",
