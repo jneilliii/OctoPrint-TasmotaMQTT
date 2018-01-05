@@ -7,83 +7,50 @@ description: Plugin to control Tasmota devices via MQTT protocol.
 author: jneilliii
 license: AGPLv3
 
-# TODO
-date: today's date in format YYYY-MM-DD, e.g. 2015-04-21
+date: 2018-01-04
 
 homepage: https://github.com/jneilliii/OctoPrint-TasmotaMQTT
 source: https://github.com/jneilliii/OctoPrint-TasmotaMQTT
 archive: https://github.com/jneilliii/OctoPrint-TasmotaMQTT/archive/master.zip
 
-# TODO
-# Set this to true if your plugin uses the dependency_links setup parameter to include
-# library versions not yet published on PyPi. SHOULD ONLY BE USED IF THERE IS NO OTHER OPTION!
-#follow_dependency_links: false
+follow_dependency_links: false
 
-# TODO
 tags:
-- a list
-- of tags
-- that apply
-- to your plugin
-- (take a look at the existing plugins for what makes sense here)
+- tasmota
+- mqtt
+- power
 
-# TODO
 screenshots:
-- url: url of a screenshot, /assets/img/...
-  alt: alt-text of a screenshot
-  caption: caption of a screenshot
-- url: url of another screenshot, /assets/img/...
-  alt: alt-text of another screenshot
-  caption: caption of another screenshot
-- ...
+- url: /assets/img/plugins/tasmota-mqtt/navbar.png
+  alt: Navbar
+  caption: Buttons on navigation bar
+- url: /assets/img/plugins/tasmota-mqtt/settings.png
+  alt: Settings
+  caption: Tasmota-MQTT Settings
+- url: /assets/img/plugins/tasmota-mqtt/relay_editor.png
+  alt: Relay Editor
+  caption: Tasmota-MQTT Relay Editor
 
-# TODO
-featuredimage: url of a featured image for your plugin, /assets/img/...
-
-# TODO
-# You only need the following if your plugin requires specific OctoPrint versions or
-# specific operating systems to function - you can safely remove the whole
-# "compatibility" block if this is not the case.
-
-compatibility:
-
-  # List of compatible versions
-  #
-  # A single version number will be interpretated as a minimum version requirement,
-  # e.g. "1.3.1" will show the plugin as compatible to OctoPrint versions 1.3.1 and up.
-  # More sophisticated version requirements can be modelled too by using PEP440
-  # compatible version specifiers.
-  #
-  # You can also remove the whole "octoprint" block. Removing it will default to all
-  # OctoPrint versions being supported.
-
-  octoprint:
-  - 1.2.0
-
-  # List of compatible operating systems
-  #
-  # Valid values:
-  #
-  # - windows
-  # - linux
-  # - macos
-  # - freebsd
-  #
-  # There are also two OS groups defined that get expanded on usage:
-  #
-  # - posix: linux, macos and freebsd
-  # - nix: linux and freebsd
-  #
-  # You can also remove the whole "os" block. Removing it will default to all
-  # operating systems being supported.
-
-  os:
-  - linux
-  - windows
-  - macos
-  - freebsd
-
+featuredimage: /assets/img/plugins/tasmota-mqtt/navbar.png
 ---
 
-**TODO**: Longer description of your plugin, configuration examples etc. This part will be visible on the page at
-http://plugins.octoprint.org/plugin/tasmota-mqtt/
+This plugin allows the control of [Tasmota](https://github.com/arendst/Sonoff-Tasmota) devices from within OctoPrint via [MQTT](https://github.com/arendst/Sonoff-Tasmota/wiki/MQTT-Overview#mqtt-overview) commands.
+
+## Prerequisites
+
+Install the [MQTT](https://github.com/OctoPrint/OctoPrint-MQTT) plugin via the Plugin Manager or manually using this url:
+
+	https://github.com/OctoPrint/OctoPrint-MQTT/archive/master.zip
+	
+## Setup
+
+Install via the Plugin Manager or manually using this URL:
+
+    https://github.com/jneilliii/OctoPrint-TasmotaMQTT/archive/master.zip
+
+## Configuration
+
+- Once installed your Tasmota devices will need to have the FullTopic configured as **%topic%/%prefix%/**
+- Use the Tasmota device's topic in the Tasmota-MQTT Plugin settings for the individual relays.
+- For multiple relay devices enter the index number that matches your desired relay.
+- For single relay devices like the [iTead Sonoff S20 Smart Socket](https://www.itead.cc/smart-socket.html), leave Relay # blank.

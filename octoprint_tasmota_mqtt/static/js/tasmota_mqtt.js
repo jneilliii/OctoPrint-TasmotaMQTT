@@ -11,39 +11,157 @@ $(function() {
         self.loginStateViewModel = parameters[0];
         self.settingsViewModel = parameters[1];
 
-        self.topic = ko.observable();
-		self.currentstate = ko.observable('UNKNOWN');
-		self.processing = ko.observable('');
+		self.processing = ko.observableArray([]);
+		self.arrRelays = ko.observableArray();
+		self.selectedRelay = ko.observable();
+		self.isPrinting = ko.observable(false);
 		
 		self.onBeforeBinding = function() {
-			self.topic(self.settingsViewModel.settings.plugins.tasmota_mqtt.topic());
-			//self.currentstate(self.settingsViewModel.settings.plugins.tasmota_mqtt.currentstate());
+			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
         }
 		
-		self.onDataUpdaterPluginMessage = function(plugin, data) {
-			if (plugin != "tasmota_mqtt") {
-				self.processing('');
-				return;
-			}
-			self.currentstate(data.currentstate);
-			self.processing('');
-        };
-		
-		self.toggleRelay = function(data) {
-			self.processing(data.topic());
+		self.onAfterBinding = function() {
             $.ajax({
                 url: API_BASEURL + "plugin/tasmota_mqtt",
                 type: "POST",
                 dataType: "json",
                 data: JSON.stringify({
-                    command: "toggleRelay",
-					topic: data.topic()
+                    command: "checkStatus"
                 }),
                 contentType: "application/json; charset=UTF-8"
-            }).done(function(){
-				console.log('command was sent to '+data.topic());
-				});
+            });
+		}
+		
+		self.onEventSettingsUpdated = function(payload) {
+			self.settingsViewModel.requestData();
+			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
+		}
+		
+		self.onEventPrinterStateChanged = function(payload) {
+			if (payload.state_id == "PRINTING" || payload.state_id == "PAUSED"){
+				self.isPrinting(true);
+			} else {
+				self.isPrinting(false);
+			}
+		}
+		
+		self.onDataUpdaterPluginMessage = function(plugin, data) {
+			if (plugin != "tasmota_mqtt") {
+				return;
+			}
+			if (data.noMQTT) {
+				new PNotify({
+							title: 'Tasmota-MQTT Error',
+							text: 'Missing the <a href="https:\/\/plugins.octoprint.org\/plugins\/mqtt\/" target="_blank">MQTT<\/a> plugin. Please install that plugin to make this plugin operational.',
+							type: 'error',
+							hide: false
+							});
+			} else {
+				var relay = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays(),function(item){
+					return (item.topic() == data.topic) && (item.relayN() == data.relayN);
+					}) || {'topic':data.topic,'relayN':data.relayN,'currentstate':'UNKNOWN'};
+				if(relay.currentstate != data.currentstate) {
+					relay.currentstate(data.currentstate);
+				}
+				
+			}
+			self.processing.remove(data.topic + '|' + data.relayN);
         };
+		
+		self.relayClick = function(data) {
+			self.processing.push(data.topic() + '|' + data.relayN());
+			switch(data.currentstate()) {
+				case "ON":
+					if(data.warn() || (data.warnPrinting() && self.isPrinting())){
+						self.selectedRelay(data);
+						$("#TasmotaMQTTWarning").modal("show");
+					} else {
+						self.toggleRelay(data);
+					}
+					break;
+				case "OFF":
+					self.toggleRelay(data);
+					break;
+				default:
+					$.ajax({
+						url: API_BASEURL + "plugin/tasmota_mqtt",
+						type: "POST",
+						dataType: "json",
+						data: JSON.stringify({
+							command: "checkRelay",
+							topic: data.topic(),
+							relayN: data.relayN()
+						}),
+						contentType: "application/json; charset=UTF-8"
+					});	
+			}
+		}
+		
+		self.cancelClick = function(data) {
+			self.processing.remove(data.topic() + '|' + data.relayN());
+		}
+		
+		self.toggleRelay = function(data) {
+			$("#TasmotaMQTTWarning").modal("hide");
+			$.ajax({
+				url: API_BASEURL + "plugin/tasmota_mqtt",
+				type: "POST",
+				dataType: "json",
+				data: JSON.stringify({
+					command: "toggleRelay",
+					topic: data.topic(),
+					relayN: data.relayN()
+				}),
+				contentType: "application/json; charset=UTF-8"
+			});
+        };
+		
+		self.addRelay = function() {
+			var arrRelaysLength = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length;
+			var nextIndex = self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays()[arrRelaysLength-1].index()+1;
+			self.selectedRelay( {'index':ko.observable(nextIndex),
+								'topic':ko.observable('sonoff'),
+								'relayN':ko.observable(''),
+								'icon':ko.observable('icon-bolt'),
+								'warn':ko.observable(true),
+								'warnPrinting':ko.observable(true),
+								'gcode':ko.observable(false),
+								'gcodeOnDelay':ko.observable(0),
+								'gcodeOffDelay':ko.observable(0),
+								'connect':ko.observable(false),
+								'connectOnDelay':ko.observable(15),
+								'disconnect':ko.observable(false),
+								'disconnectOffDelay':ko.observable(0),
+								'sysCmdOn':ko.observable(false),
+								'sysCmdRunOn':ko.observable(""),
+								'sysCmdOnDelay':ko.observable(0),
+								'sysCmdOff':ko.observable(false),
+								'sysCmdRunOff':ko.observable(""),
+								'sysCmdOffDelay':ko.observable(0),
+								'currentstate':ko.observable('UNKNOWN')} );
+			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push(self.selectedRelay());
+			$("#TasmotaMQTTRelayEditor").modal("show");																							
+		}
+		
+		self.removeRelay = function(data) {
+			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.remove(data);
+			$.ajax({
+					url: API_BASEURL + "plugin/tasmota_mqtt",
+					type: "POST",
+					dataType: "json",
+					data: JSON.stringify({
+						command: "removeRelay",
+						topic: data.topic(),
+						relayN: data.relayN()
+					}),
+					contentType: "application/json; charset=UTF-8"
+				});
+		}
+		
+		self.editRelay = function(data) {
+			self.selectedRelay(data);
+			$("#TasmotaMQTTRelayEditor").modal("show");
+		}
     }
 
     /* view model class, parameters for constructor, container to bind to

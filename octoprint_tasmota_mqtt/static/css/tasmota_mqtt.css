@@ -9,3 +9,8 @@
 .UNKNOWN {
 	color: #808080 !important;
 }
+
+#TasmotaMQTTRelayEditor table th, #TasmotaMQTTRelayEditor table td {
+	border-top: none;
+	vertical-align: top;
+}

@@ -3,22 +3,31 @@ from __future__ import absolute_import
 
 import octoprint.plugin
 from octoprint.server import user_permission
-
+import threading
+import time
+import os
 
 class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
                          octoprint.plugin.AssetPlugin,
                          octoprint.plugin.TemplatePlugin,
 						 octoprint.plugin.StartupPlugin,
 						 octoprint.plugin.SimpleApiPlugin,
-						 octoprint.plugin.EventHandlerPlugin):
+						 octoprint.plugin.EventHandlerPlugin,
+						 octoprint.plugin.WizardPlugin):
 
 	##~~ SettingsPlugin mixin
 
 	def get_settings_defaults(self):
 		return dict(
-			topic = "sonoff" #,
-			#currentstate = "UNKNOWN"
+			arrRelays = [dict(index=1,topic="sonoff",relayN="",icon="icon-bolt",warn=True,warnPrinting=True,gcode=False,currentstate="UNKNOWN",gcodeOnDelay=0,gcodeOffDelay=0,connect=False,connectOnDelay=15,disconnect=False,disconnectOffDelay=0,sysCmdOn=False,sysCmdRunOn="",sysCmdOnDelay=0,sysCmdOff=False,sysCmdRunOff="",sysCmdOffDelay=0)]
 		)
+		
+	def get_settings_version(self):
+		return 2
+		
+	def on_settings_migrate(self, target, current=None):
+		if current is None or current < self.get_settings_version():
+			self._settings.set(['arrRelays'], self.get_settings_defaults()["arrRelays"])
 		
 	##~~ StartupPlugin mixin
 	
@@ -27,26 +36,43 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if helpers:
 			if "mqtt_publish" in helpers:
 				self.mqtt_publish = helpers["mqtt_publish"]
+				self.mqtt_publish("octoprint/plugin/tasmota", "OctoPrint-TasmotaMQTT publishing.")
 			if "mqtt_subscribe" in helpers:
 				self.mqtt_subscribe = helpers["mqtt_subscribe"]
+				for relay in self._settings.get(["arrRelays"]):
+					self._logger.info("%s/stat/POWER%s" % (relay["topic"],relay["relayN"]))
+					self.mqtt_subscribe("%s/stat/POWER%s" % (relay["topic"],relay["relayN"]), self._on_mqtt_subscription, kwargs=dict(top=relay["topic"],relayN=relay["relayN"]))
 			if "mqtt_unsubscribe" in helpers:
 				self.mqtt_unsubscribe = helpers["mqtt_unsubscribe"]
-
-		self.mqtt_publish("octoprint/plugin/tasmota/pub", "OctoPrint-TasmotaMQTT publishing.")
-		self.mqtt_subscribe("%s/stat/POWER" % self._settings.get(["topic"]), self._on_mqtt_subscription)
+		else:
+			self._plugin_manager.send_plugin_message(self._identifier, dict(noMQTT=True))
 
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
-		self.mqtt_publish("octoprint/plugin/tasmota/pub", "echo: " + message)
-		self._settings.set(["%s" % topic],message)
-		self._settings.save()
-		self._plugin_manager.send_plugin_message(self._identifier, dict(currentstate=message))
+		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message)
+		newrelays = []
+		bolRelayStateChanged = False
+		for relay in self._settings.get(["arrRelays"]):
+			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message:
+				bolRelayStateChanged = True
+				relay["currentstate"] = message
+				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message))
+			newrelays.append(relay)
+			
+		if bolRelayStateChanged:
+			self._settings.set(["arrRelays"],newrelays)
+			self._settings.save()
 		
 	##~~ EventHandlerPlugin mixin
 		
 	def on_event(self, event, payload):
-		if event == "ClientOpened":
-			self.mqtt_publish("%s/cmnd/POWER" % self._settings.get(["topic"]),"")
+		if event == "WHERE":
+			try:
+				self.mqtt_unsubscribe(self._on_mqtt_subscription)
+				for relay in self._settings.get(["arrRelays"]):
+					self.mqtt_subscribe("%s/stat/POWER%s" % (relay["topic"],relay["relayN"]), self._on_mqtt_subscription, kwargs=dict(top=relay["topic"],relayN=relay["relayN"]))
+			except:
+				self._plugin_manager.send_plugin_message(self._identifier, dict(noMQTT=True))
 
 	##~~ AssetPlugin mixin
 
@@ -69,7 +95,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin mixin
 	
 	def get_api_commands(self):
-		return dict(toggleRelay=["topic"],checkState=["topic"])
+		return dict(toggleRelay=["topic","relayN"],checkRelay=["topic","relayN"],checkStatus=[],removeRelay=["topic","relayN"])
 		
 	def on_api_command(self, command, data):
 		if not user_permission.can():
@@ -77,9 +103,67 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return make_response("Insufficient rights", 403)
 			
 		if command == 'toggleRelay':
-			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data), "TOGGLE")	
-		if command == 'checkState':
-			self.mqtt_publish("%s/cmnd/Power" % "{topic}".format(**data))
+			self._logger.info("toggling {topic} relay {relayN}".format(**data))
+			for relay in self._settings.get(["arrRelays"]):
+				if relay["topic"] == "{topic}".format(**data) and relay["relayN"] == "{relayN}".format(**data):
+					if relay["currentstate"] == "ON":
+						if relay["sysCmdOff"]:
+							t = threading.Timer(int(relay["sysCmdOffDelay"]),os.system,args=[relay["sysCmdRunOff"]])
+							t.start()
+						if relay["disconnect"]:
+							self._printer.disconnect()
+							time.sleep(int(relay["disconnectOffDelay"]))
+						self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "OFF")
+					if relay["currentstate"] == "OFF":
+						self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "ON")
+						if relay["sysCmdOn"]:
+							t = threading.Timer(int(relay["sysCmdOnDelay"]),os.system,args=[relay["sysCmdRunOn"]])
+							t.start()
+						if relay["connect"]:
+							t = threading.Timer(int(relay["connectOnDelay"]),self._printer.connect)
+							t.start()				
+			
+		if command == 'checkStatus':
+			for relay in self._settings.get(["arrRelays"]):
+				self._logger.info("checking status of %s relay %s" % (relay["topic"],relay["relayN"]))
+				self.mqtt_publish("%s/cmnd/POWER%s" % (relay["topic"],relay["relayN"]),"")
+					
+		if command == 'checkRelay':
+			self._logger.info("subscribing to {topic} relay {relayN}".format(**data))
+			self.mqtt_subscribe("{topic}/stat/POWER{relayN}".format(**data), self._on_mqtt_subscription, kwargs=dict(top="{topic}".format(**data),relayN="{relayN}".format(**data)))
+			self._logger.info("checking {topic} relay {relayN}".format(**data))
+			self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "")
+			
+		if command == 'removeRelay':
+			self.mqtt_unsubscribe(self._on_mqtt_subscription,topic="{topic}/stat/POWER{relayN}".format(**data))
+			
+	##~~ Gcode processing hook
+	
+	def processGCODE(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
+		if gcode:
+			if cmd.startswith("M8") and cmd.count(" ") >= 2:
+				topic = cmd.split()[1]
+				relayN = cmd.split()[2]	
+				for relay in self._settings.get(["arrRelays"]):
+					if relay["topic"].upper() == topic.upper() and relay["relayN"] == relayN and relay["gcode"]:
+						if cmd.startswith("M80"):
+							t = threading.Timer(int(relay["gcodeOnDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (relay["topic"],relay["relayN"]), "ON"))
+							t.start()
+							return
+						elif cmd.startswith("M81"):
+							t = threading.Timer(int(relay["gcodeOffDelay"]),self.mqtt_publish("%s/cmnd/Power%s" % (relay["topic"],relay["relayN"]), "OFF"))
+							t.start()
+							return
+						else:
+							return
+			
+	##~~ WizardPlugin mixin
+			
+	def is_wizard_required(self):
+		helpers = self._plugin_manager.get_helpers("mqtt")
+		if helpers:
+			return False
+		return True 
 	
 	##~~ Softwareupdate hook
 
@@ -115,6 +199,7 @@ def __plugin_load__():
 
 	global __plugin_hooks__
 	__plugin_hooks__ = {
+		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
 
