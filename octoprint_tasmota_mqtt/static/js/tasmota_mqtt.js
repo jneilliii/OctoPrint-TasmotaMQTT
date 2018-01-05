@@ -14,7 +14,13 @@ $(function() {
 		self.processing = ko.observableArray([]);
 		self.arrRelays = ko.observableArray();
 		self.selectedRelay = ko.observable();
-		self.isPrinting = ko.observable();
+		self.isPrinting = ko.computed(function(){
+			if(self._printer.get_state_id() == "PRINTING" || self._printer.get_state_id() == "PAUSED"){
+				return true
+			} else {
+				return false
+			}
+		});
 		
 		self.onBeforeBinding = function() {
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
@@ -64,8 +70,12 @@ $(function() {
 			self.processing.push(data.topic() + '|' + data.relayN());
 			switch(data.currentstate()) {
 				case "ON":
-					self.selectedRelay(data);
-					$("#TasmotaMQTTWarning").modal("show");
+					if(data.warn() || (data.warnPrinting() && self.isPrinting())){
+						self.selectedRelay(data);
+						$("#TasmotaMQTTWarning").modal("show");
+					} else {
+						self.toggleRelay(data);
+					}
 					break;
 				case "OFF":
 					self.toggleRelay(data);
