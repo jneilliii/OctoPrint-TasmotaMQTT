@@ -18,7 +18,6 @@ $(function() {
 		
 		self.onBeforeBinding = function() {
 			self.arrRelays(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays());
-			self.isPrinting(self.settingsViewModel.settings.)
         }
 		
 		self.onAfterBinding = function() {
