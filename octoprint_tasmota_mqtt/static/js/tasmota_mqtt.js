@@ -60,35 +60,42 @@ $(function() {
 			self.processing.remove(data.topic + '|' + data.relayN);
         };
 		
-		self.toggleRelay = function(data) {
-			if(data.currentstate()=="UNKNOWN"){
-				$.ajax({
-					url: API_BASEURL + "plugin/tasmota_mqtt",
-					type: "POST",
-					dataType: "json",
-					data: JSON.stringify({
-						command: "checkRelay",
-						topic: data.topic(),
-						relayN: data.relayN()
-					}),
-					contentType: "application/json; charset=UTF-8"
-				});	
-			} else {
-				self.processing.push(data.topic() + '|' + data.relayN());
-				self.selectedRelay(data);
-				$("#TasmotaMQTTWarning").modal("show");
-				$.ajax({
-					url: API_BASEURL + "plugin/tasmota_mqtt",
-					type: "POST",
-					dataType: "json",
-					data: JSON.stringify({
-						command: "toggleRelay",
-						topic: data.topic(),
-						relayN: data.relayN()
-					}),
-					contentType: "application/json; charset=UTF-8"
-				});
+		self.relayClick = function(data) {
+			self.processing.push(data.topic() + '|' + data.relayN());
+			switch(data.currentstate()) {
+				case "ON":
+					self.selectedRelay(data);
+					$("#TasmotaMQTTWarning").modal("show");
+				case "OFF":
+					self.toggleRelay(data);
+				default:
+					$.ajax({
+						url: API_BASEURL + "plugin/tasmota_mqtt",
+						type: "POST",
+						dataType: "json",
+						data: JSON.stringify({
+							command: "checkRelay",
+							topic: data.topic(),
+							relayN: data.relayN()
+						}),
+						contentType: "application/json; charset=UTF-8"
+					});	
 			}
+		}
+		
+		self.toggleRelay = function(data) {
+			$("#TasmotaMQTTWarning").modal("hide");
+			$.ajax({
+				url: API_BASEURL + "plugin/tasmota_mqtt",
+				type: "POST",
+				dataType: "json",
+				data: JSON.stringify({
+					command: "toggleRelay",
+					topic: data.topic(),
+					relayN: data.relayN()
+				}),
+				contentType: "application/json; charset=UTF-8"
+			});
         };
 		
 		self.addRelay = function() {
