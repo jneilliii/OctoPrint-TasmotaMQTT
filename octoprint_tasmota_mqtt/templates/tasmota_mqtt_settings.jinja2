@@ -5,7 +5,7 @@
 			<tr>
 				<td style="text-align:center">Topic | Relay #</td>
 				<td style="text-align:center">Options</td>
-				<td style="text-align:center"><a href="#" class="btn btn-mini icon-plus" data-bind="click: addRelay"></a></td>
+				<td style="text-align:center"><div class="btn-group"><a href="#" class="btn btn-mini icon-plus" data-bind="click: addRelay"></a></div></td>
 			</tr>
 		</thead>
 		<tbody data-bind='foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays'>
@@ -20,8 +20,10 @@
 					<i class="icon" data-bind="css: {'icon-check': sysCmdOn(),'icon-check-empty': !sysCmdOn()}" title="Run System Command On" />
 					<i class="icon" data-bind="css: {'icon-check': sysCmdOff(),'icon-check-empty': !sysCmdOff()}" title="Run System Command Off" /></td>
 				<td style="text-align:center">
-					<a href="#" class="icon-pencil" data-bind="click: $root.editRelay"></a>
-					<a href="#" class="icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a> </td>
+					<div class="btn-group">
+						<a href="#" class="btn btn-mini icon-pencil" data-bind="click: $root.editRelay"></a>
+						<a href="#" class="btn btn-mini icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a> </td>
+					</div>
 			</tr>
 		</tbody>
 	</table>
