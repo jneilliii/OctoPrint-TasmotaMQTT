@@ -1,7 +1,7 @@
 ---
 layout: plugin
 
-id: tasmota-mqtt
+id: tasmota_mqtt
 title: OctoPrint-TasmotaMQTT
 description: Plugin to control Tasmota devices via MQTT protocol.
 author: jneilliii
