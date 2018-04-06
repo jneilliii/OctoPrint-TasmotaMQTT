@@ -144,7 +144,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	
 	def processGCODE(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 		if gcode:
-			if cmd.startswith("M8") and cmd.count(" ") >= 2:
+			if cmd.startswith("M8") and cmd.count(" ") >= 1:
 				topic = cmd.split()[1]
 				relayN = cmd.split()[2]	
 				for relay in self._settings.get(["arrRelays"]):
