@@ -98,6 +98,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		return dict(toggleRelay=["topic","relayN"],checkRelay=["topic","relayN"],checkStatus=[],removeRelay=["topic","relayN"])
 		
 	def on_api_command(self, command, data):
+		self._logger.info(command)
+		self._logger.info(data)
 		if not user_permission.can():
 			from flask import make_response
 			return make_response("Insufficient rights", 403)
