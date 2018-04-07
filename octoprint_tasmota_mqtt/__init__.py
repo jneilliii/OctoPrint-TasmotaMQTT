@@ -102,6 +102,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._logger.info(data)
 		if not user_permission.can():
 			from flask import make_response
+			self._logger.info('no permissions')
 			return make_response("Insufficient rights", 403)
 			
 		if command == 'toggleRelay':
