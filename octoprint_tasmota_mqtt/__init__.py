@@ -102,7 +102,6 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._logger.info(data)
 		if not user_permission.can():
 			from flask import make_response
-			self._logger.info('no permissions')
 			return make_response("Insufficient rights", 403)
 			
 		if command == 'toggleRelay':
@@ -110,22 +109,9 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			for relay in self._settings.get(["arrRelays"]):
 				if relay["topic"] == "{topic}".format(**data) and relay["relayN"] == "{relayN}".format(**data):
 					if relay["currentstate"] == "ON":
-						if relay["sysCmdOff"]:
-							t = threading.Timer(int(relay["sysCmdOffDelay"]),os.system,args=[relay["sysCmdRunOff"]])
-							t.start()
-						if relay["disconnect"]:
-							self._printer.disconnect()
-							time.sleep(int(relay["disconnectOffDelay"]))
-						self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "OFF")
-					if relay["currentstate"] == "OFF":
-						self.mqtt_publish("{topic}/cmnd/Power{relayN}".format(**data), "ON")
-						if relay["sysCmdOn"]:
-							t = threading.Timer(int(relay["sysCmdOnDelay"]),os.system,args=[relay["sysCmdRunOn"]])
-							t.start()
-						if relay["connect"]:
-							t = threading.Timer(int(relay["connectOnDelay"]),self._printer.connect)
-							t.start()				
-			
+						self.turn_off(relay)
+					if relay["currentstate"] == "OFF":				
+						self.turn_on(relay)
 		if command == 'checkStatus':
 			for relay in self._settings.get(["arrRelays"]):
 				self._logger.info("checking status of %s relay %s" % (relay["topic"],relay["relayN"]))
@@ -142,6 +128,24 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			
 		if command == 'removeRelay':
 			self.mqtt_unsubscribe(self._on_mqtt_subscription,topic="{topic}/stat/POWER{relayN}".format(**data))
+			
+	def turn_on(self, relay):
+		self.mqtt_publish(relay["topic"] + "/cmnd/Power" + relay["relayN"], "ON")
+		if relay["sysCmdOn"]:
+			t = threading.Timer(int(relay["sysCmdOnDelay"]),os.system,args=[relay["sysCmdRunOn"]])
+			t.start()
+		if relay["connect"]:
+			t = threading.Timer(int(relay["connectOnDelay"]),self._printer.connect)
+			t.start()
+			
+	def turn_off(self, relay):
+		if relay["sysCmdOff"]:
+			t = threading.Timer(int(relay["sysCmdOffDelay"]),os.system,args=[relay["sysCmdRunOff"]])
+			t.start()
+		if relay["disconnect"]:
+			self._printer.disconnect()
+			time.sleep(int(relay["disconnectOffDelay"]))
+		self.mqtt_publish(relay["topic"] + "/cmnd/Power" + relay["relayN"], "OFF")
 			
 	##~~ Gcode processing hook
 	
@@ -161,7 +165,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 							return
 						elif cmd.startswith("M81"):
 							## t = threading.Timer(int(relay["gcodeOffDelay"]),self.mqtt_publish,[relay["topic"] + "/cmnd/Power" + relay["relayN"], "OFF"])
-							t = threading.Timer(int(relay["gcodeOffDelay"]),self.on_api_command,["toggleRelay",relay])
+							t = threading.Timer(int(relay["gcodeOffDelay"]),self.turn_off,[relay])
 							t.start()
 							return
 						else:
