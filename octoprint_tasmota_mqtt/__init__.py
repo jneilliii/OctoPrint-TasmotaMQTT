@@ -160,7 +160,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				for relay in self._settings.get(["arrRelays"]):
 					if relay["topic"].upper() == topic.upper() and relay["relayN"] == relayN and relay["gcode"]:
 						if cmd.startswith("M80"):
-							t = threading.Timer(int(relay["gcodeOnDelay"]),self.mqtt_publish,[relay["topic"] + "/cmnd/Power" + relay["relayN"], "ON"])
+							t = threading.Timer(int(relay["gcodeOnDelay"]),self.turn_on,[relay])
 							t.start()
 							return
 						elif cmd.startswith("M81"):
