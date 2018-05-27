@@ -20,6 +20,7 @@ Install via the Plugin Manager or manually using this URL:
 - Use the Tasmota device's topic in the Tasmota-MQTT Plugin settings for the individual relays.
 - For multiple relay devices enter the index number that matches your desired relay.
 - For single relay devices like the [iTead Sonoff S20 Smart Socket](https://www.itead.cc/smart-socket.html), leave Relay # blank.
+- Full Topic in plugin settings must match your relay's `Full Topic` pattern.
 
 ## Screenshots
 
