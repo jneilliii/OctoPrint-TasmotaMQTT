@@ -153,6 +153,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			
 	##~~ Gcode processing hook
 	
+	def gcode_turn_off(self, relay):
+		if relay["warnPrinting"] and self._printer.is_printing():
+			self._logger.info("Not powering off %s | %s because printer is printing." % relay["topic"],relay["relayN"])
+		else:
+			self.turn_off(relay)
+	
 	def processGCODE(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 		if gcode:
 			if cmd.startswith("M8") and cmd.count(" ") >= 1:
@@ -166,14 +172,16 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 						if cmd.startswith("M80"):
 							t = threading.Timer(int(relay["gcodeOnDelay"]),self.turn_on,[relay])
 							t.start()
-							return
+							return "M80"
 						elif cmd.startswith("M81"):
 							## t = threading.Timer(int(relay["gcodeOffDelay"]),self.mqtt_publish,[relay["topic"] + "/cmnd/Power" + relay["relayN"], "OFF"])
-							t = threading.Timer(int(relay["gcodeOffDelay"]),self.turn_off,[relay])
+							t = threading.Timer(int(relay["gcodeOffDelay"]),self.gcode_turn_off,[relay])
 							t.start()
-							return
-						else:
-							return
+							return "M81"
+			else:
+				return
+		else:
+			return
 							
 	##~~ Utility functions
 	
