@@ -23,16 +23,16 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			arrRelays = [dict(index=1,topic="sonoff",relayN="",icon="icon-bolt",warn=True,warnPrinting=True,gcode=False,currentstate="UNKNOWN",gcodeOnDelay=0,gcodeOffDelay=0,connect=False,connectOnDelay=15,disconnect=False,disconnectOffDelay=0,sysCmdOn=False,sysCmdRunOn="",sysCmdOnDelay=0,sysCmdOff=False,sysCmdRunOff="",sysCmdOffDelay=0)],
 			full_topic_pattern='%topic%/%prefix%/'
 		)
-		
+
 	def get_settings_version(self):
 		return 2
-		
+
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < self.get_settings_version():
 			self._settings.set(['arrRelays'], self.get_settings_defaults()["arrRelays"])
-		
+
 	##~~ StartupPlugin mixin
-	
+
 	def on_after_startup(self):
 		helpers = self._plugin_manager.get_helpers("mqtt", "mqtt_publish", "mqtt_subscribe", "mqtt_unsubscribe")
 		if helpers:
@@ -51,22 +51,22 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._logger.info("Received message for {topic}: {message}".format(**locals()))
-		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message)
+		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message.decode("utf-8"))
 		newrelays = []
 		bolRelayStateChanged = False
 		for relay in self._settings.get(["arrRelays"]):
-			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message:
+			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message.decode("utf-8"):
 				bolRelayStateChanged = True
-				relay["currentstate"] = message
-				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message))
+				relay["currentstate"] = message.decode("utf-8")
+				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message.decode("utf-8")))
 			newrelays.append(relay)
-			
+
 		if bolRelayStateChanged:
 			self._settings.set(["arrRelays"],newrelays)
 			self._settings.save()
-		
+
 	##~~ EventHandlerPlugin mixin
-		
+
 	def on_event(self, event, payload):
 		if event == "WHERE":
 			try:
@@ -85,32 +85,32 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			js=["js/tasmota_mqtt.js"],
 			css=["css/tasmota_mqtt.css"]
 		)
-		
+
 	##~~ TemplatePlugin mixin
-	
+
 	def get_template_configs(self):
 		return [
 			dict(type="navbar", custom_bindings=True),
 			dict(type="settings", custom_bindings=True)
 		]
-		
+
 	##~~ SimpleApiPlugin mixin
-	
+
 	def get_api_commands(self):
 		return dict(toggleRelay=["topic","relayN"],checkRelay=["topic","relayN"],checkStatus=[],removeRelay=["topic","relayN"])
-		
+
 	def on_api_command(self, command, data):
 		if not user_permission.can():
 			from flask import make_response
 			return make_response("Insufficient rights", 403)
-			
+
 		if command == 'toggleRelay':
 			self._logger.info("toggling {topic} relay {relayN}".format(**data))
 			for relay in self._settings.get(["arrRelays"]):
 				if relay["topic"] == "{topic}".format(**data) and relay["relayN"] == "{relayN}".format(**data):
 					if relay["currentstate"] == "ON":
 						self.turn_off(relay)
-					if relay["currentstate"] == "OFF":				
+					if relay["currentstate"] == "OFF":
 						self.turn_on(relay)
 		if command == 'checkStatus':
 			for relay in self._settings.get(["arrRelays"]):
@@ -119,7 +119,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 					self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"),"")
 				except:
 					self._plugin_manager.send_plugin_message(self._identifier, dict(noMQTT=True))
-					
+
 		if command == 'checkRelay':
 			self._logger.info("subscribing to {topic} relay {relayN}".format(**data))
 			for relay in self._settings.get(["arrRelays"]):
@@ -127,12 +127,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 					self.mqtt_subscribe(self.generate_mqtt_full_topic(relay, "stat"), self._on_mqtt_subscription, kwargs=dict(top="{topic}".format(**data),relayN="{relayN}".format(**data)))
 					self._logger.info("checking {topic} relay {relayN}".format(**data))
 					self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "")
-			
+
 		if command == 'removeRelay':
 			for relay in self._settings.get(["arrRelays"]):
 				if relay["topic"] == "{topic}".format(**data) and relay["relayN"] == "{relayN}".format(**data):
 					self.mqtt_unsubscribe(self._on_mqtt_subscription,topic=self.generate_mqtt_full_topic(relay, "stat"))
-			
+
 	def turn_on(self, relay):
 		self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "ON")
 		if relay["sysCmdOn"]:
@@ -141,7 +141,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if relay["connect"]:
 			t = threading.Timer(int(relay["connectOnDelay"]),self._printer.connect)
 			t.start()
-			
+
 	def turn_off(self, relay):
 		if relay["sysCmdOff"]:
 			t = threading.Timer(int(relay["sysCmdOffDelay"]),os.system,args=[relay["sysCmdRunOff"]])
@@ -150,15 +150,15 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			self._printer.disconnect()
 			time.sleep(int(relay["disconnectOffDelay"]))
 		self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "OFF")
-			
+
 	##~~ Gcode processing hook
-	
+
 	def gcode_turn_off(self, relay):
 		if relay["warnPrinting"] and self._printer.is_printing():
 			self._logger.info("Not powering off %s | %s because printer is printing." % relay["topic"],relay["relayN"])
 		else:
 			self.turn_off(relay)
-	
+
 	def processGCODE(self, comm_instance, phase, cmd, cmd_type, gcode, *args, **kwargs):
 		if gcode:
 			if cmd.startswith("M8") and cmd.count(" ") >= 1:
@@ -182,29 +182,26 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				return
 		else:
 			return
-							
+
 	##~~ Utility functions
-	
+
 	def generate_mqtt_full_topic(self, relay, prefix):
 		full_topic = re.sub(r'%topic%', relay["topic"], self._settings.get(["full_topic_pattern"]))
 		full_topic = re.sub(r'%prefix%', prefix, full_topic)
 		full_topic = full_topic + "POWER" + relay["relayN"]
 		return full_topic
-			
+
 	##~~ WizardPlugin mixin
-			
+
 	def is_wizard_required(self):
 		helpers = self._plugin_manager.get_helpers("mqtt")
 		if helpers:
 			return False
 		return True 
-	
+
 	##~~ Softwareupdate hook
 
 	def get_update_information(self):
-		# Define the configuration for your plugin to use with the Software Update
-		# Plugin here. See https://github.com/foosel/OctoPrint/wiki/Plugin:-Software-Update
-		# for details.
 		return dict(
 			tasmota_mqtt=dict(
 				displayName="Tasmota-MQTT",
@@ -221,11 +218,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			)
 		)
 
-
-# If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
-# ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
-# can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
 __plugin_name__ = "Tasmota-MQTT"
+__plugin_pythoncompat__ = ">=2.7,<4"
 
 def __plugin_load__():
 	global __plugin_implementation__
