@@ -9,12 +9,12 @@ import os
 import re
 
 class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
-                         octoprint.plugin.AssetPlugin,
-                         octoprint.plugin.TemplatePlugin,
-						 octoprint.plugin.StartupPlugin,
-						 octoprint.plugin.SimpleApiPlugin,
-						 octoprint.plugin.EventHandlerPlugin,
-						 octoprint.plugin.WizardPlugin):
+						octoprint.plugin.AssetPlugin,
+						octoprint.plugin.TemplatePlugin,
+						octoprint.plugin.StartupPlugin,
+						octoprint.plugin.SimpleApiPlugin,
+						octoprint.plugin.EventHandlerPlugin,
+						octoprint.plugin.WizardPlugin):
 
 	##~~ SettingsPlugin mixin
 
@@ -138,7 +138,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if relay["sysCmdOn"]:
 			t = threading.Timer(int(relay["sysCmdOnDelay"]),os.system,args=[relay["sysCmdRunOn"]])
 			t.start()
-		if relay["connect"]:
+		if relay["connect"] and self._printer.is_closed_or_error():
 			t = threading.Timer(int(relay["connectOnDelay"]),self._printer.connect)
 			t.start()
 
