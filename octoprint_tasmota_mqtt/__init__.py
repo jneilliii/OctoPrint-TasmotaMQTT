@@ -97,20 +97,21 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	##~~ SimpleApiPlugin mixin
 
 	def get_api_commands(self):
-		return dict(toggleRelay=["topic","relayN"],checkRelay=["topic","relayN"],checkStatus=[],removeRelay=["topic","relayN"])
+		return dict(turnOn=["topic","relayN"],turnOff=["topic","relayN"],toggleRelay=["topic","relayN"],checkRelay=["topic","relayN"],checkStatus=[],removeRelay=["topic","relayN"])
 
 	def on_api_command(self, command, data):
 		if not user_permission.can():
 			from flask import make_response
 			return make_response("Insufficient rights", 403)
 
-		if command == 'toggleRelay':
-			self._logger.info("toggling {topic} relay {relayN}".format(**data))
+		if command == 'toggleRelay' or command == "turnOn" or command == "turnOff":
 			for relay in self._settings.get(["arrRelays"]):
 				if relay["topic"] == "{topic}".format(**data) and relay["relayN"] == "{relayN}".format(**data):
-					if relay["currentstate"] == "ON":
+					if command == "turnOff" or (command == "toggleRelay" and relay["currentstate"] == "ON"):
+						self._logger.info("turning off {topic} relay {relayN}".format(**data))
 						self.turn_off(relay)
-					if relay["currentstate"] == "OFF":
+					if command == "turnOn" or (command == "toggleRelay" and relay["currentstate"] == "OFF"):
+						self._logger.info("turning on {topic} relay {relayN}".format(**data))
 						self.turn_on(relay)
 		if command == 'checkStatus':
 			for relay in self._settings.get(["arrRelays"]):
