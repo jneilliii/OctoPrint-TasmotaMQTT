@@ -1,78 +1,133 @@
 <h4>Tasmota-MQTT Settings</h4>
-<form class="form-horizontal">
-	<table class="table table-condensed" data-bind='visible: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 0'>
-		<thead>
-			<tr>
-				<td style="text-align:center">Topic | Relay #</td>
-				<td style="text-align:center">Options</td>
-				<td style="text-align:center"><div class="btn-group"><a href="#" class="btn btn-mini icon-plus" data-bind="click: addRelay"></a></div></td>
-			</tr>
-		</thead>
-		<tbody data-bind='foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays'>
-			<tr data-bind='attr: {title: (topic()+"|"+relayN())}'>
-				<td><!--ko text: topic--><!--/ko--> | <!--ko text: relayN--><!--/ko--></td>
-				<td style="text-align:center">
-					<i class="icon" data-bind="css: {'icon-check': warn(),'icon-check-empty': !warn()}" title="Warning Prompt" />
-					<i class="icon" data-bind="css: {'icon-check': warnPrinting(),'icon-check-empty': !warnPrinting()}" title="Warn While Printing" />
-					<i class="icon" data-bind="css: {'icon-check': connect(),'icon-check-empty': !connect()}" title="Auto Connect" />
-					<i class="icon" data-bind="css: {'icon-check': disconnect(),'icon-check-empty': !disconnect()}" title="Auto Disconnect" />
-					<i class="icon" data-bind="css: {'icon-check': gcode(),'icon-check-empty': !gcode()}" title="GCODE Trigger" />
-					<i class="icon" data-bind="css: {'icon-check': sysCmdOn(),'icon-check-empty': !sysCmdOn()}" title="Run System Command On" />
-					<i class="icon" data-bind="css: {'icon-check': sysCmdOff(),'icon-check-empty': !sysCmdOff()}" title="Run System Command Off" /></td>
-				<td style="text-align:center">
-					<div class="btn-group">
-						<a href="#" class="btn btn-mini icon-pencil" data-bind="click: $root.editRelay"></a>
-						<a href="#" class="btn btn-mini icon-trash" data-bind="click: $root.removeRelay, visible: $root.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays().length > 1"></a>
-					</div>
-				</td>
-			</tr>
-		</tbody>
-	</table>
-	<h5>Full Topic</h5>
-	<input type="text" class="input-block-level" data-bind="value: settingsViewModel.settings.plugins.tasmota_mqtt.full_topic_pattern" />
-	<div id="TasmotaMQTTRelayEditor" data-bind="with: selectedRelay" class="modal hide fade">
-	    <div class="modal-header">
-			<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
-			<h3>Tasmota-MQTT Relay Editor</h3>
-		</div>
-		<div class="modal-body">
-			<table class="table table-condensed">
-				<tr>
-					<td><div class="controls"><label class="control-label">{{ _('Topic') }}</label><input type="text" class="input-block-level" data-bind="value: topic" /><div></td>
-					<td><div class="controls"><label class="control-label">{{ _('Relay #') }}</label><input type="text" class="input input-small" data-bind="value: relayN" /></div></td>
-					<td><div class="controls"><label class="control-label"><a href="http://fontawesome.io/3.2.1/cheatsheet/" target="_blank">{{ _('Icon Class') }}</a></label><input type="text" class="input-block-level" data-bind="value: icon" /><div></td>
-				</tr>
-				<tr>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: warn"/> Warning Prompt</label></div></td>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: warnPrinting"/> Warn While Printing</label></div></td>
-					<td></td>
-				</tr>
-				<tr>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: connect"/> Auto Connect</label><input type="text" data-bind="value: connectOnDelay,visible: connect" class="input input-small" /></div></td>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: disconnect"/> Auto Disconnect</label><input type="text" data-bind="value: disconnectOffDelay,visible: disconnect" class="input input-small" /></div></td>
-				</tr>
-				<tr>
-					<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: gcode"/> GCODE Trigger</label></div></td>
-					<td></td>
-					<td></td>
-				</tr>
-				<tr data-bind="visible: gcode">
-					<td><div class="controls"><label class="control-label">{{ _('GCODE On Delay') }}</label><input type="text" data-bind="value: gcodeOnDelay" class="input input-small" /></div></td>
-					<td><div class="controls"><label class="control-label">{{ _('GCODE Off Delay') }}</label><input type="text" data-bind="value: gcodeOffDelay" class="input input-small" /></div></td>
-					<td></td>
-				</tr>
-				<tr>
-					<td colspan="2" style="vertical-align: bottom"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOn"/> Run System Command After On</label><input type="text" data-bind="value: sysCmdRunOn,visible: sysCmdOn" class="input-block-level" /></div></td>
-					<td style="vertical-align: bottom"><div class="controls" data-bind="visible: sysCmdOn"><label class="control-label">{{ _('Delay') }}</label><input type="text" data-bind="value: sysCmdOnDelay"  class="input input-small" /></div></td>
-				</tr>
-				<tr>
-					<td colspan="2" style="vertical-align: bottom"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOff"/> Run System Command Before Off</label><input type="text" data-bind="value: sysCmdRunOff,visible: sysCmdOff" class="input-block-level" /></div></td>
-					<td style="vertical-align: bottom"><div class="controls" data-bind="visible: sysCmdOff"><label class="control-label">{{ _('Delay') }}</label><input type="text" data-bind="value: sysCmdOffDelay"  class="input input-small" /></div></td>
-				</tr>
-			</table>
-		</div>
-		<div class="modal-footer">
-			<a href="#" class="btn" data-dismiss="modal" aria-hidden="true">{{ _('Close') }}</a>
+<table class="table table-condensed">
+	<thead>
+		<tr>
+			<td style="text-align:center">Topic | Relay #</td>
+			<td style="text-align:center">Options</td>
+			<td style="text-align:center"><div class="btn-group"><a href="#" class="btn btn-mini icon-plus" data-bind="click: addRelay"></a></div></td>
+		</tr>
+	</thead>
+	<tbody data-bind="sortable: { data: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays, options: { cancel: '.unsortable', handle: '.moveRelay', axis:'y'} }">
+		<tr data-bind='attr: {title: (topic()+"|"+relayN())}'>
+			<td><!--ko text: topic--><!--/ko--> | <!--ko text: relayN--><!--/ko--></td>
+			<td style="text-align:center">
+				<i class="icon" data-bind="css: {'icon-check': automaticShutdownEnabled(),'icon-check-empty': !automaticShutdownEnabled()}" title="Automatic Power Off Enabled"></i>
+				<i class="icon" data-bind="css: {'icon-check': warn(),'icon-check-empty': !warn()}" title="Warning Prompt" />
+				<i class="icon" data-bind="css: {'icon-check': warnPrinting(),'icon-check-empty': !warnPrinting()}" title="Warn While Printing" />
+				<i class="icon" data-bind="css: {'icon-check': connect(),'icon-check-empty': !connect()}" title="Auto Connect" />
+				<i class="icon" data-bind="css: {'icon-check': disconnect(),'icon-check-empty': !disconnect()}" title="Auto Disconnect" />
+				<i class="icon" data-bind="css: {'icon-check': gcode(),'icon-check-empty': !gcode()}" title="GCODE Trigger" />
+				<i class="icon" data-bind="css: {'icon-check': sysCmdOn(),'icon-check-empty': !sysCmdOn()}" title="Run System Command On" />
+				<i class="icon" data-bind="css: {'icon-check': sysCmdOff(),'icon-check-empty': !sysCmdOff()}" title="Run System Command Off" /></td>
+			<td style="text-align:center">
+				<div class="btn-group">
+					<a href="#" class="btn btn-mini movePlug"><i class="fas fa-arrows-alt" aria-hidden="true"></i></a>
+					<a href="#" class="btn btn-mini" data-bind="click: $root.editRelay"><i class="fas fa-pencil-alt" aria-hidden="true"></i></a>
+					<a href="#" class="btn btn-mini btn-danger" data-bind="click: $root.removeRelay"><i class="fas fa-times" aria-hidden="true"></i></a>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<div class="row-fluid">
+	<div class="control-group">
+		<div class="controls">
+			<label class="control-label">Full Topic</label>
+			<input type="text" class="input-block-level" data-bind="value: settingsViewModel.settings.plugins.tasmota_mqtt.full_topic_pattern" />
 		</div>
 	</div>
-</form>
+	<div class="control-group">
+		<div class="controls">
+			<label class="checkbox">
+			<input type="checkbox" title="Automatically power off all plugs with the option Off on Idle enabled after configured idle timeout, target tempoerature is reached, and timelapse is completed." data-bind="checked: settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle" />Power Off on Idle
+			</label>
+		</div>
+	</div>
+	<div class="control-group">
+		<label class="control-label">Abort Power Off Timeout</label>
+		<div class="controls">
+			<div class="input-append" title="Pop up will be displayed for this amount of time to allow for cancelling power off of plugs.">
+				<input type="number" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.tasmota_mqtt.abortTimeout, enable: settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled />
+				<span class="add-on">secs</span>
+			</div>
+		</div>
+	</div>
+	<div class="control-group">
+		<label class="control-label">Idle Timeout</label>
+		<div class="controls">
+			<div class="input-append" title="Amount of time that will lapse before printer is considered idle and plugs will be powered off.">
+				<input type="number" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.tasmota_mqtt.idleTimeout, enable: settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle() && settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled />
+				<span class="add-on">mins</span>
+			</div>
+		</div>
+	</div>
+	<div class="control-group">
+		<label class="control-label">Idle Target Temperature</label>
+		<div class="controls">
+			<div class="input-append" title="Power off will be delayed untill all heaters reach this temperature.">
+				<input type="number" class="input-mini text-right" data-bind="value: settingsViewModel.settings.plugins.tasmota_mqtt.idleTimeoutWaitTemp, enable: settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle() && settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled />
+				<span class="add-on">degs</span>
+			</div>
+		</div>
+	</div>
+	<div class="control-group">
+		<label class="control-label">GCode Commands to Ignore for Idle</label>
+		<div class="controls" title="Comma separated list of gcode commands to ignore for determining printer idle state.">
+			<input type="text" class="input-block-level" data-bind="value: settingsViewModel.settings.plugins.tasmota_mqtt.idleIgnoreCommands, enable: settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle() && settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled />
+		</div>
+	</div>
+	<div class="control-group">
+		<div class="controls">
+			<label class="checkbox">
+			<input type="checkbox" title="Enable custom debug logging for troupleshooting." data-bind="checked: settingsViewModel.settings.plugins.tasmota_mqtt.debug_logging" />Debug Logging
+			</label>
+		</div>
+	</div>
+</div>
+
+<div id="TasmotaMQTTRelayEditor" data-bind="with: selectedRelay" class="modal hide fade">
+	<div class="modal-header">
+		<a href="#" class="close" data-dismiss="modal" aria-hidden="true">&times;</a>
+		<h3>Tasmota-MQTT Relay Editor</h3>
+	</div>
+	<div class="modal-body">
+		<table class="table table-condensed">
+			<tr>
+				<td><div class="controls"><label class="control-label">Topic</label><input type="text" class="input-block-level" data-bind="value: topic" /><div></td>
+				<td><div class="controls"><label class="control-label">Relay #</label><input type="text" class="input input-small" data-bind="value: relayN" /></div></td>
+				<td><div class="controls"><label class="control-label">Icon Class</label><input type="text" class="input-block-level" data-bind="value: icon, iconpicker: icon,iconpickerOptions: {hideOnSelect: true, collision: true}" /><div></td>
+			</tr>
+			<tr>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: automaticShutdownEnabled, enable: $root.settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled /> Off on Idle</label></div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: warn"/> Warning Prompt</label></div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: warnPrinting"/> Warn While Printing</label></div></td>
+			</tr>
+			<tr>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: connect"/> Auto Connect</label><input type="text" data-bind="value: connectOnDelay,visible: connect" class="input input-small" /></div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: disconnect"/> Auto Disconnect</label><input type="text" data-bind="value: disconnectOffDelay,visible: disconnect" class="input input-small" /></div></td>
+			</tr>
+			<tr>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: gcode"/> GCODE Trigger</label></div></td>
+				<td></td>
+				<td></td>
+			</tr>
+			<tr data-bind="visible: gcode">
+				<td><div class="controls"><label class="control-label">GCODE On Delay</label><input type="text" data-bind="value: gcodeOnDelay" class="input input-small" /></div></td>
+				<td><div class="controls"><label class="control-label">GCODE Off Delay</label><input type="text" data-bind="value: gcodeOffDelay" class="input input-small" /></div></td>
+				<td></td>
+			</tr>
+			<tr>
+				<td colspan="2" style="vertical-align: bottom"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOn"/> Run System Command After On</label><input type="text" data-bind="value: sysCmdRunOn,visible: sysCmdOn" class="input-block-level" /></div></td>
+				<td style="vertical-align: bottom"><div class="controls" data-bind="visible: sysCmdOn"><label class="control-label">Delay</label><input type="text" data-bind="value: sysCmdOnDelay"  class="input input-small" /></div></td>
+			</tr>
+			<tr>
+				<td colspan="2" style="vertical-align: bottom"><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: sysCmdOff"/> Run System Command Before Off</label><input type="text" data-bind="value: sysCmdRunOff,visible: sysCmdOff" class="input-block-level" /></div></td>
+				<td style="vertical-align: bottom"><div class="controls" data-bind="visible: sysCmdOff"><label class="control-label">Delay</label><input type="text" data-bind="value: sysCmdOffDelay"  class="input input-small" /></div></td>
+			</tr>
+		</table>
+	</div>
+	<div class="modal-footer">
+		<a href="#" class="btn" data-dismiss="modal" aria-hidden="true">Close</a>
+	</div>
+</div>
