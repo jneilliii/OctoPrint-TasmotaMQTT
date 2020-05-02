@@ -1,0 +1,3 @@
+<div class="accordion-heading-button btn-group" data-bind="visible: loginStateViewModel.loggedIn()">
+	<a href="#" data-bind="enable: loginStateViewModel.loggedIn(), click: onToggleAutomaticShutdown, attr: {title: toggleShutdownTitle()}, css: {'fa-toggle-off' : !settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle(), 'fa-toggle-on' : settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()}" title="Enable Automatic Power Off" class="fa fa-lg fa-toggle-off"></a>
+</div>

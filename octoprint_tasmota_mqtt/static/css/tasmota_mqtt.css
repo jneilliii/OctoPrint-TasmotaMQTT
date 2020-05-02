@@ -14,3 +14,7 @@
 	border-top: none;
 	vertical-align: top;
 }
+
+#TasmotaMQTTRelayEditor > div.modal-body {
+	overflow: visible !important;
+}
