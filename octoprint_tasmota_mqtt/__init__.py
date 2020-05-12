@@ -246,7 +246,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if event == Events.ERROR:
 			self._tasmota_mqtt_logger.debug("Powering off enabled plugs because there was an error.")
 			for relay in self._settings.get(['arrRelays']):
-				if relay.get("errorEvent", True):
+				if relay.get("errorEvent", False):
 					self.turn_off(relay)
 				
 		# Timeplapse Events
