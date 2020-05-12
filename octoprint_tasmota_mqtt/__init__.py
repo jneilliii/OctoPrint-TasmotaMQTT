@@ -101,7 +101,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 	def get_settings_version(self):
-		return 3
+		return 4
 
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 3:
@@ -114,7 +114,15 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relay["automaticShutdownEnabled"] = False
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"],arrRelays_new)
-
+			
+		if current <= 3:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
+				relay["errorEvent"] = False
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"],arrRelays_new)
+			
 	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
 		old_powerOffWhenIdle = self._settings.get_boolean(["powerOffWhenIdle"])
@@ -234,6 +242,13 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			self._timeout_value = None
 			self._plugin_manager.send_plugin_message(self._identifier, dict(powerOffWhenIdle=self.powerOffWhenIdle, type="timeout", timeout_value=self._timeout_value))
 
+		# Print Error Event
+		if event == Events.ERROR:
+			self._tasmota_mqtt_logger.debug("Powering off enabled plugs because there was an error.")
+			for relay in self._settings.get(['arrRelays']):
+				if relay.get("errorEvent", False):
+					self.turn_off(relay)
+				
 		# Timeplapse Events
 		if self.powerOffWhenIdle == True and event == Events.MOVIE_RENDERING:
 			self._tasmota_mqtt_logger.debug("Timelapse generation started: %s" % payload.get("movie_basename", ""))
