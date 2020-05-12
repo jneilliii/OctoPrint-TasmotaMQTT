@@ -234,6 +234,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			self._timeout_value = None
 			self._plugin_manager.send_plugin_message(self._identifier, dict(powerOffWhenIdle=self.powerOffWhenIdle, type="timeout", timeout_value=self._timeout_value))
 
+		# Print Error Event
+		if event == Events.ERROR:
+			self._tasmota_mqtt_logger.debug("Powering off enabled plugs.")
+			for relay in self._settings.get(['arrRelays']):
+				self.turn_off(relay)
+				
 		# Timeplapse Events
 		if self.powerOffWhenIdle == True and event == Events.MOVIE_RENDERING:
 			self._tasmota_mqtt_logger.debug("Timelapse generation started: %s" % payload.get("movie_basename", ""))
