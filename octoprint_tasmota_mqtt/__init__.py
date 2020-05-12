@@ -101,7 +101,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 	def get_settings_version(self):
-		return 3
+		return 4
 
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 3:
@@ -114,7 +114,15 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relay["automaticShutdownEnabled"] = False
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"],arrRelays_new)
-
+			
+		if current <= 3:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
+				relay["errorEvent"] = False
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"],arrRelays_new)
+			
 	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
 		old_powerOffWhenIdle = self._settings.get_boolean(["powerOffWhenIdle"])
