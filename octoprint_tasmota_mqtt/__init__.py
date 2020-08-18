@@ -403,7 +403,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 	def _start_idle_timer(self):
 		self._stop_idle_timer()
 
-		if self.powerOffWhenIdle:
+		if self.powerOffWhenIdle and any(map(lambda r: r["currentstate"] == "ON", self._settings.get(["arrRelays"]))):
 			self._idleTimer = ResettableTimer(self.idleTimeout * 60, self._idle_poweroff)
 			self._idleTimer.start()
 
