@@ -146,7 +146,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 		if self.powerOffWhenIdle == True:
 			self._tasmota_mqtt_logger.debug("Settings saved, Automatic Power Off Endabled, starting idle timer...")
-			self._start_idle_timer()
+			self._reset_idle_timer()
 
 		new_debug_logging = self._settings.get_boolean(["debug_logging"])
 
@@ -168,21 +168,6 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._tasmota_mqtt_logger.addHandler(tasmota_mqtt_logging_hnadler)
 		self._tasmota_mqtt_logger.setLevel(logging.DEBUG if self._settings.get_boolean(["debug_logging"]) else logging.INFO)
 		self._tasmota_mqtt_logger.propagate = False
-		self.abortTimeout = self._settings.get_int(["abortTimeout"])
-		self._tasmota_mqtt_logger.debug("abortTimeout: %s" % self.abortTimeout)
-
-		self.powerOffWhenIdle = self._settings.get_boolean(["powerOffWhenIdle"])
-		self._tasmota_mqtt_logger.debug("powerOffWhenIdle: %s" % self.powerOffWhenIdle)
-
-		self.idleTimeout = self._settings.get_int(["idleTimeout"])
-		self._tasmota_mqtt_logger.debug("idleTimeout: %s" % self.idleTimeout)
-		self.idleIgnoreCommands = self._settings.get(["idleIgnoreCommands"])
-		self._idleIgnoreCommandsArray = self.idleIgnoreCommands.split(',')
-		self._tasmota_mqtt_logger.debug("idleIgnoreCommands: %s" % self.idleIgnoreCommands)
-		self.idleTimeoutWaitTemp = self._settings.get_int(["idleTimeoutWaitTemp"])
-		self._tasmota_mqtt_logger.debug("idleTimeoutWaitTemp: %s" % self.idleTimeoutWaitTemp)
-
-		self._start_idle_timer()
 
 	def on_after_startup(self):
 		helpers = self._plugin_manager.get_helpers("mqtt", "mqtt_publish", "mqtt_subscribe", "mqtt_unsubscribe")
@@ -199,6 +184,24 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				self.mqtt_unsubscribe = helpers["mqtt_unsubscribe"]
 		else:
 			self._plugin_manager.send_plugin_message(self._identifier, dict(noMQTT=True))
+
+		self.abortTimeout = self._settings.get_int(["abortTimeout"])
+		self._tasmota_mqtt_logger.debug("abortTimeout: %s" % self.abortTimeout)
+
+		self.powerOffWhenIdle = self._settings.get_boolean(["powerOffWhenIdle"])
+		self._tasmota_mqtt_logger.debug("powerOffWhenIdle: %s" % self.powerOffWhenIdle)
+
+		self.idleTimeout = self._settings.get_int(["idleTimeout"])
+		self._tasmota_mqtt_logger.debug("idleTimeout: %s" % self.idleTimeout)
+		self.idleIgnoreCommands = self._settings.get(["idleIgnoreCommands"])
+		self._idleIgnoreCommandsArray = self.idleIgnoreCommands.split(',')
+		self._tasmota_mqtt_logger.debug("idleIgnoreCommands: %s" % self.idleIgnoreCommands)
+		self.idleTimeoutWaitTemp = self._settings.get_int(["idleTimeoutWaitTemp"])
+		self._tasmota_mqtt_logger.debug("idleTimeoutWaitTemp: %s" % self.idleTimeoutWaitTemp)
+
+		if self.powerOffWhenIdle == True:
+			self._tasmota_mqtt_logger.debug("Starting idle timer due to startup")
+			self._reset_idle_timer()
 
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._tasmota_mqtt_logger.debug("Received message for {topic}: {message}".format(**locals()))
