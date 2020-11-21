@@ -7,6 +7,7 @@ from octoprint.events import eventManager, Events
 from octoprint.util import RepeatedTimer
 from octoprint.access.permissions import Permissions, ADMIN_GROUP
 from uptime import uptime
+from flask_babel import gettext
 import threading
 import time
 import os
