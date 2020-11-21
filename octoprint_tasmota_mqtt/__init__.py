@@ -157,7 +157,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			self._plugin_manager.send_plugin_message(self._identifier, dict(powerOffWhenIdle=self.powerOffWhenIdle, type="timeout", timeout_value=self._timeout_value))
 
 		if self.powerOffWhenIdle == True:
-			self._tasmota_mqtt_logger.debug("Settings saved, Automatic Power Off Endabled, starting idle timer...")
+			self._tasmota_mqtt_logger.debug("Settings saved, Automatic Power Off Enabled, starting idle timer...")
 			self._reset_idle_timer()
 
 		new_debug_logging = self._settings.get_boolean(["debug_logging"])
@@ -224,18 +224,22 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message.decode("utf-8"))
 		newrelays = []
 		bolRelayStateChanged = False
+		bolForceIdleTimer = False
 		for relay in self._settings.get(["arrRelays"]):
 			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message.decode("utf-8"):
 				bolRelayStateChanged = True
 				relay["currentstate"] = message.decode("utf-8")
 				if relay["automaticShutdownEnabled"] == True and self._settings.get_boolean(["powerOffWhenIdle"]) and relay["currentstate"] == "ON":
-					self._reset_idle_timer()
+					self._tasmota_mqtt_logger.debug("Forcing reset of idle timer because {} was just turned on.".format(relay["topic"]))
+					bolForceIdleTimer = True
 				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message.decode("utf-8")))
 			newrelays.append(relay)
 
 		if bolRelayStateChanged:
 			self._settings.set(["arrRelays"], newrelays)
 			self._settings.save()
+		if bolForceIdleTimer:
+			self._reset_idle_timer()
 
 	##~~ EventHandlerPlugin mixin
 
