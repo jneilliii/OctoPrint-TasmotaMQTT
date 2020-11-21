@@ -5,6 +5,7 @@ import octoprint.plugin
 from octoprint.server import user_permission
 from octoprint.events import eventManager, Events
 from octoprint.util import RepeatedTimer
+from uptime import uptime
 import threading
 import time
 import os
@@ -447,6 +448,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return
 
 		if self._printer.is_printing() or self._printer.is_paused():
+			return
+
+		if (uptime()/60) <= (self._settings.get_int(["idleTimeout"])):
+			self._tasmota_mqtt_logger.debug("Just booted so wait for time sync.")
+			self._tasmota_mqtt_logger.debug("uptime: {}, comparison: {}".format((uptime()/60), (self._settings.get_int(["idleTimeout"]))))
+			self._reset_idle_timer()
 			return
 
 		self._tasmota_mqtt_logger.debug("Idle timeout reached after %s minute(s). Turning heaters off prior to powering off plugs." % self.idleTimeout)
