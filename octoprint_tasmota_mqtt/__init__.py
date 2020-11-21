@@ -325,12 +325,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_api_commands(self):
 		return dict(
-			turnOn=["topic","relayN"],
-			turnOff=["topic","relayN"],
-			toggleRelay=["topic","relayN"],
-			checkRelay=["topic","relayN"],
+			turnOn=["topic", "relayN"],
+			turnOff=["topic", "relayN"],
+			toggleRelay=["topic", "relayN"],
+			checkRelay=["topic", "relayN"],
 			checkStatus=[],
-			removeRelay=["topic","relayN"],
+			removeRelay=["topic", "relayN"],
 			enableAutomaticShutdown=[],
 			disableAutomaticShutdown=[],
 			abortAutomaticShutdown=[])
