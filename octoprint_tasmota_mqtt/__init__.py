@@ -5,6 +5,7 @@ import octoprint.plugin
 from octoprint.server import user_permission
 from octoprint.events import eventManager, Events
 from octoprint.util import RepeatedTimer
+from octoprint.access.permissions import Permissions, ADMIN_GROUP
 from uptime import uptime
 import threading
 import time
@@ -328,7 +329,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			abortAutomaticShutdown=[])
 
 	def on_api_command(self, command, data):
-		if not user_permission.can():
+		if not Permissions.PLUGIN_TASMOTA_MQTT_CONTROL.can():
 			from flask import make_response
 			return make_response("Insufficient rights", 403)
 
@@ -627,6 +628,18 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return False
 		return True
 
+	##~~ Access Permissions Hook
+
+	def get_additional_permissions(self, *args, **kwargs):
+		return [
+			dict(key="CONTROL",
+				 name="Control Relays",
+				 description=gettext("Allows control of configured relays."),
+				 roles=["admin"],
+				 dangerous=True,
+				 default_groups=[ADMIN_GROUP])
+		]
+
 	##~~ Softwareupdate hook
 
 	def get_update_information(self):
@@ -666,6 +679,7 @@ def __plugin_load__():
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
+		"octoprint.access.permissions": __plugin_implementation__.get_additional_permissions,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
 
