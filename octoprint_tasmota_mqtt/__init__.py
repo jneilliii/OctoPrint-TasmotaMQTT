@@ -228,11 +228,13 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message.decode("utf-8"):
 				bolRelayStateChanged = True
 				relay["currentstate"] = message.decode("utf-8")
+				if relay["automaticShutdownEnabled"] == True and self._settings.get_boolean(["powerOffWhenIdle"]) and relay["currentstate"] == "ON":
+					self._reset_idle_timer()
 				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message.decode("utf-8")))
 			newrelays.append(relay)
 
 		if bolRelayStateChanged:
-			self._settings.set(["arrRelays"],newrelays)
+			self._settings.set(["arrRelays"], newrelays)
 			self._settings.save()
 
 	##~~ EventHandlerPlugin mixin
