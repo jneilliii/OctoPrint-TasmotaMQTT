@@ -5,6 +5,9 @@ import octoprint.plugin
 from octoprint.server import user_permission
 from octoprint.events import eventManager, Events
 from octoprint.util import RepeatedTimer
+from octoprint.access.permissions import Permissions, ADMIN_GROUP
+from uptime import uptime
+from flask_babel import gettext
 import threading
 import time
 import os
@@ -85,6 +88,13 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._skipIdleTimer = False
 		self.powerOffWhenIdle = False
 		self._idleTimer = None
+		self._autostart_file = None
+		self.mqtt_publish = None
+		self.mqtt_subscribe = None
+		self.idleTimeout = None
+		self.idleIgnoreCommands = None
+		self._idleIgnoreCommandsArray = None
+		self.idleTimeoutWaitTemp = None
 
 	##~~ SettingsPlugin mixin
 
@@ -101,7 +111,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 	def get_settings_version(self):
-		return 4
+		return 5
 
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 3:
@@ -114,15 +124,24 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relay["automaticShutdownEnabled"] = False
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"],arrRelays_new)
-			
+
 		if current <= 3:
 			# Add new fields
 			arrRelays_new = []
 			for relay in self._settings.get(['arrRelays']):
 				relay["errorEvent"] = False
 				arrRelays_new.append(relay)
-			self._settings.set(["arrRelays"],arrRelays_new)
-			
+			self._settings.set(["arrRelays"], arrRelays_new)
+
+		if current <= 4:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
+				relay["event_on_upload"] = False
+				relay["event_on_startup"] = False
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"], arrRelays_new)
+
 	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
 		old_powerOffWhenIdle = self._settings.get_boolean(["powerOffWhenIdle"])
@@ -143,9 +162,9 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if self.powerOffWhenIdle != old_powerOffWhenIdle:
 			self._plugin_manager.send_plugin_message(self._identifier, dict(powerOffWhenIdle=self.powerOffWhenIdle, type="timeout", timeout_value=self._timeout_value))
 
-		if self.powerOffWhenIdle == True:
-			self._tasmota_mqtt_logger.debug("Settings saved, Automatic Power Off Endabled, starting idle timer...")
-			self._start_idle_timer()
+		if self.powerOffWhenIdle:
+			self._tasmota_mqtt_logger.debug("Settings saved, Automatic Power Off Enabled, starting idle timer...")
+			self._reset_idle_timer()
 
 		new_debug_logging = self._settings.get_boolean(["debug_logging"])
 
@@ -167,6 +186,27 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._tasmota_mqtt_logger.addHandler(tasmota_mqtt_logging_hnadler)
 		self._tasmota_mqtt_logger.setLevel(logging.DEBUG if self._settings.get_boolean(["debug_logging"]) else logging.INFO)
 		self._tasmota_mqtt_logger.propagate = False
+
+	def on_after_startup(self):
+		helpers = self._plugin_manager.get_helpers("mqtt", "mqtt_publish", "mqtt_subscribe", "mqtt_unsubscribe")
+		if helpers:
+			if "mqtt_subscribe" in helpers:
+				self.mqtt_subscribe = helpers["mqtt_subscribe"]
+				for relay in self._settings.get(["arrRelays"]):
+					self._tasmota_mqtt_logger.debug(self.generate_mqtt_full_topic(relay, "stat"))
+					self.mqtt_subscribe(self.generate_mqtt_full_topic(relay, "stat"), self._on_mqtt_subscription, kwargs=dict(top=relay["topic"],relayN=relay["relayN"]))
+			if "mqtt_publish" in helpers:
+				self.mqtt_publish = helpers["mqtt_publish"]
+				self.mqtt_publish("octoprint/plugin/tasmota", "OctoPrint-TasmotaMQTT publishing.")
+				if any(map(lambda r: r["event_on_startup"] == True, self._settings.get(["arrRelays"]))):
+					for relay in self._settings.get(["arrRelays"]):
+						self._tasmota_mqtt_logger.debug("powering on {} due to startup.".format(relay["topic"]))
+						self.turn_on(relay)
+			if "mqtt_unsubscribe" in helpers:
+				self.mqtt_unsubscribe = helpers["mqtt_unsubscribe"]
+		else:
+			self._plugin_manager.send_plugin_message(self._identifier, dict(noMQTT=True))
+
 		self.abortTimeout = self._settings.get_int(["abortTimeout"])
 		self._tasmota_mqtt_logger.debug("abortTimeout: %s" % self.abortTimeout)
 
@@ -181,39 +221,31 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self.idleTimeoutWaitTemp = self._settings.get_int(["idleTimeoutWaitTemp"])
 		self._tasmota_mqtt_logger.debug("idleTimeoutWaitTemp: %s" % self.idleTimeoutWaitTemp)
 
-		self._start_idle_timer()
-
-	def on_after_startup(self):
-		helpers = self._plugin_manager.get_helpers("mqtt", "mqtt_publish", "mqtt_subscribe", "mqtt_unsubscribe")
-		if helpers:
-			if "mqtt_publish" in helpers:
-				self.mqtt_publish = helpers["mqtt_publish"]
-				self.mqtt_publish("octoprint/plugin/tasmota", "OctoPrint-TasmotaMQTT publishing.")
-			if "mqtt_subscribe" in helpers:
-				self.mqtt_subscribe = helpers["mqtt_subscribe"]
-				for relay in self._settings.get(["arrRelays"]):
-					self._tasmota_mqtt_logger.debug(self.generate_mqtt_full_topic(relay, "stat"))
-					self.mqtt_subscribe(self.generate_mqtt_full_topic(relay, "stat"), self._on_mqtt_subscription, kwargs=dict(top=relay["topic"],relayN=relay["relayN"]))
-			if "mqtt_unsubscribe" in helpers:
-				self.mqtt_unsubscribe = helpers["mqtt_unsubscribe"]
-		else:
-			self._plugin_manager.send_plugin_message(self._identifier, dict(noMQTT=True))
+		if self.powerOffWhenIdle:
+			self._tasmota_mqtt_logger.debug("Starting idle timer due to startup")
+			self._reset_idle_timer()
 
 	def _on_mqtt_subscription(self, topic, message, retained=None, qos=None, *args, **kwargs):
 		self._tasmota_mqtt_logger.debug("Received message for {topic}: {message}".format(**locals()))
 		self.mqtt_publish("octoprint/plugin/tasmota", "echo: " + message.decode("utf-8"))
 		newrelays = []
 		bolRelayStateChanged = False
+		bolForceIdleTimer = False
 		for relay in self._settings.get(["arrRelays"]):
 			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message.decode("utf-8"):
 				bolRelayStateChanged = True
 				relay["currentstate"] = message.decode("utf-8")
+				if relay["automaticShutdownEnabled"] == True and self._settings.get_boolean(["powerOffWhenIdle"]) and relay["currentstate"] == "ON":
+					self._tasmota_mqtt_logger.debug("Forcing reset of idle timer because {} was just turned on.".format(relay["topic"]))
+					bolForceIdleTimer = True
 				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message.decode("utf-8")))
 			newrelays.append(relay)
 
 		if bolRelayStateChanged:
-			self._settings.set(["arrRelays"],newrelays)
+			self._settings.set(["arrRelays"], newrelays)
 			self._settings.save()
+		if bolForceIdleTimer:
+			self._reset_idle_timer()
 
 	##~~ EventHandlerPlugin mixin
 
@@ -248,7 +280,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			for relay in self._settings.get(['arrRelays']):
 				if relay.get("errorEvent", False):
 					self.turn_off(relay)
-				
+
 		# Timeplapse Events
 		if self.powerOffWhenIdle == True and event == Events.MOVIE_RENDERING:
 			self._tasmota_mqtt_logger.debug("Timelapse generation started: %s" % payload.get("movie_basename", ""))
@@ -258,11 +290,31 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			self._tasmota_mqtt_logger.debug("Timelapse generation finished: %s. Return Code: %s" % (payload.get("movie_basename", ""), payload.get("returncode", "completed")))
 			self._timelapse_active = False
 
+		# Printer Connected Event
+		if event == Events.CONNECTED:
+			if self._autostart_file:
+				self._tasmota_mqtt_logger.debug("printer connected starting print of %s" % self._autostart_file)
+				self._printer.select_file(self._autostart_file, False, printAfterSelect=True)
+				self._autostart_file = None
+		# File Uploaded Event
+		if event == Events.UPLOAD and any(map(lambda r: r["event_on_upload"] == True, self._settings.get(["arrRelays"]))):
+			if payload.get("print", False):  # implemented in OctoPrint version 1.4.1
+				self._tasmota_mqtt_logger.debug(
+					"File uploaded: %s. Turning enabled relays on." % payload.get("name", ""))
+				self._tasmota_mqtt_logger.debug(payload)
+				for relay in self._settings.get(['arrRelays']):
+					self._tasmota_mqtt_logger.debug(relay)
+					if relay["event_on_upload"] is True and not self._printer.is_ready():
+						self._tasmota_mqtt_logger.debug("powering on %s due to %s event." % (relay["topic"], event))
+						if payload.get("path", False) and payload.get("target") == "local":
+							self._autostart_file = payload.get("path")
+							self.turn_on(relay)
+
 	##~~ AssetPlugin mixin
 
 	def get_assets(self):
 		return dict(
-			js=["js/jquery-ui.min.js","js/knockout-sortable.js","js/fontawesome-iconpicker.js","js/ko.iconpicker.js","js/tasmota_mqtt.js"],
+			js=["js/jquery-ui.min.js","js/knockout-sortable.1.2.0.js","js/fontawesome-iconpicker.js","js/ko.iconpicker.js","js/tasmota_mqtt.js"],
 			css=["css/font-awesome.min.css","css/font-awesome-v4-shims.min.css","css/fontawesome-iconpicker.css","css/tasmota_mqtt.css"]
 		)
 
@@ -279,18 +331,18 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def get_api_commands(self):
 		return dict(
-			turnOn=["topic","relayN"],
-			turnOff=["topic","relayN"],
-			toggleRelay=["topic","relayN"],
-			checkRelay=["topic","relayN"],
+			turnOn=["topic", "relayN"],
+			turnOff=["topic", "relayN"],
+			toggleRelay=["topic", "relayN"],
+			checkRelay=["topic", "relayN"],
 			checkStatus=[],
-			removeRelay=["topic","relayN"],
+			removeRelay=["topic", "relayN"],
 			enableAutomaticShutdown=[],
 			disableAutomaticShutdown=[],
 			abortAutomaticShutdown=[])
 
 	def on_api_command(self, command, data):
-		if not user_permission.can():
+		if not Permissions.PLUGIN_TASMOTA_MQTT_CONTROL.can():
 			from flask import make_response
 			return make_response("Insufficient rights", 403)
 
@@ -449,6 +501,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if self._printer.is_printing() or self._printer.is_paused():
 			return
 
+		if (uptime()/60) <= (self._settings.get_int(["idleTimeout"])):
+			self._tasmota_mqtt_logger.debug("Just booted so wait for time sync.")
+			self._tasmota_mqtt_logger.debug("uptime: {}, comparison: {}".format((uptime()/60), (self._settings.get_int(["idleTimeout"]))))
+			self._reset_idle_timer()
+			return
+
 		self._tasmota_mqtt_logger.debug("Idle timeout reached after %s minute(s). Turning heaters off prior to powering off plugs." % self.idleTimeout)
 		if self._wait_for_heaters():
 			self._tasmota_mqtt_logger.debug("Heaters below temperature.")
@@ -581,7 +639,19 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		helpers = self._plugin_manager.get_helpers("mqtt")
 		if helpers:
 			return False
-		return True 
+		return True
+
+	##~~ Access Permissions Hook
+
+	def get_additional_permissions(self, *args, **kwargs):
+		return [
+			dict(key="CONTROL",
+				 name="Control Relays",
+				 description=gettext("Allows control of configured relays."),
+				 roles=["admin"],
+				 dangerous=True,
+				 default_groups=[ADMIN_GROUP])
+		]
 
 	##~~ Softwareupdate hook
 
@@ -596,6 +666,16 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				user="jneilliii",
 				repo="OctoPrint-TasmotaMQTT",
 				current=self._plugin_version,
+				stable_branch=dict(
+					name="Stable", branch="master", comittish=["master"]
+				),
+				prerelease_branches=[
+					dict(
+						name="Release Candidate",
+						branch="rc",
+						comittish=["rc", "master"],
+					)
+				],
 
 				# update method: pip
 				pip="https://github.com/jneilliii/OctoPrint-TasmotaMQTT/archive/{target_version}.zip"
@@ -612,6 +692,7 @@ def __plugin_load__():
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
+		"octoprint.access.permissions": __plugin_implementation__.get_additional_permissions,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
 
