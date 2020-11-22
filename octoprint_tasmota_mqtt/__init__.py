@@ -89,6 +89,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self.powerOffWhenIdle = False
 		self._idleTimer = None
 		self._autostart_file = None
+		self.mqtt_publish = None
+		self.mqtt_subscribe = None
+		self.idleTimeout = None
+		self.idleIgnoreCommands = None
+		self._idleIgnoreCommandsArray = None
+		self.idleTimeoutWaitTemp = None
 
 	##~~ SettingsPlugin mixin
 
@@ -125,7 +131,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			for relay in self._settings.get(['arrRelays']):
 				relay["errorEvent"] = False
 				arrRelays_new.append(relay)
-			self._settings.set(["arrRelays"],arrRelays_new)
+			self._settings.set(["arrRelays"], arrRelays_new)
 
 		if current <= 4:
 			# Add new fields
@@ -134,7 +140,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relay["event_on_upload"] = False
 				relay["event_on_startup"] = False
 				arrRelays_new.append(relay)
-			self._settings.set(["arrRelays"],arrRelays_new)
+			self._settings.set(["arrRelays"], arrRelays_new)
 
 	def on_settings_save(self, data):
 		old_debug_logging = self._settings.get_boolean(["debug_logging"])
@@ -156,7 +162,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if self.powerOffWhenIdle != old_powerOffWhenIdle:
 			self._plugin_manager.send_plugin_message(self._identifier, dict(powerOffWhenIdle=self.powerOffWhenIdle, type="timeout", timeout_value=self._timeout_value))
 
-		if self.powerOffWhenIdle == True:
+		if self.powerOffWhenIdle:
 			self._tasmota_mqtt_logger.debug("Settings saved, Automatic Power Off Enabled, starting idle timer...")
 			self._reset_idle_timer()
 
@@ -215,7 +221,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self.idleTimeoutWaitTemp = self._settings.get_int(["idleTimeoutWaitTemp"])
 		self._tasmota_mqtt_logger.debug("idleTimeoutWaitTemp: %s" % self.idleTimeoutWaitTemp)
 
-		if self.powerOffWhenIdle == True:
+		if self.powerOffWhenIdle:
 			self._tasmota_mqtt_logger.debug("Starting idle timer due to startup")
 			self._reset_idle_timer()
 
