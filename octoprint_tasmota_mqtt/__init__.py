@@ -13,6 +13,7 @@ import time
 import os
 import re
 import logging
+import json
 
 try:
 	from octoprint.util import ResettableTimer
