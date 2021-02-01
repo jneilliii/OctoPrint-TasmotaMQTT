@@ -13,6 +13,7 @@ import time
 import os
 import re
 import logging
+import json
 
 try:
 	from octoprint.util import ResettableTimer
@@ -339,7 +340,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			removeRelay=["topic", "relayN"],
 			enableAutomaticShutdown=[],
 			disableAutomaticShutdown=[],
-			abortAutomaticShutdown=[])
+			abortAutomaticShutdown=[],
+			getListPlug=[])
 
 	def on_api_command(self, command, data):
 		if not Permissions.PLUGIN_TASMOTA_MQTT_CONTROL.can():
@@ -406,6 +408,9 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 		if command == "enableAutomaticShutdown" or command == "disableAutomaticShutdown" or command == "abortAutomaticShutdown":
 			self._plugin_manager.send_plugin_message(self._identifier, dict(powerOffWhenIdle=self.powerOffWhenIdle, type="timeout", timeout_value=self._timeout_value))
+
+		if command == "getListPlug":
+			return json.dumps(self._settings.get(["arrRelays"]))
 
 	def turn_on(self, relay):
 		self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "ON")
