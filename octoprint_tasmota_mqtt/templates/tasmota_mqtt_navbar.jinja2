@@ -1,5 +1,5 @@
 <!-- ko foreach: settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays -->
-<a class="pull-right" href=#" data-bind='visible: $root.loginStateViewModel.loggedIn(), click: $root.relayClick,  attr: {title: (topic()+"|"+relayN())}' style="display: none;float: left;"><i class="icon" data-bind="css: [currentstate(), icon(),(($root.processing().indexOf(topic() + '|' + relayN()) > -1) ? 'icon-spin' : '')].join(' ')"></i></a>
+<a class="pull-right" href=#" data-bind='visible: $root.loginStateViewModel.loggedIn() && showInNavbar(), click: $root.relayClick,  attr: {title: (topic()+"|"+relayN())}' style="display: none;float: left;"><i class="icon" data-bind="css: [currentstate(), icon(),(($root.processing().indexOf(topic() + '|' + relayN()) > -1) ? 'icon-spin' : '')].join(' ')"></i></a>
 <!-- /ko -->
 <div id="TasmotaMQTTWarning" data-bind="with: selectedRelay" class="modal hide fade">
     <div class="modal-header">

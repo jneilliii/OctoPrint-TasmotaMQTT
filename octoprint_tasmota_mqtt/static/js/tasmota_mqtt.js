@@ -22,7 +22,7 @@ $(function() {
 					});
 		});
 		self.show_sidebar = ko.computed(function(){
-			return self.filteredSmartplugs().length > 0;
+			return self.filteredSmartplugs().length > 0 && self.settingsViewModel.settings.plugins.tasmota_mqtt.show_sidebar();
 		});
 		self.toggleShutdownTitle = ko.pureComputed(function() {
 			return self.automaticShutdownEnabled() ? 'Disable Automatic Power Off' : 'Enable Automatic Power Off';
@@ -233,6 +233,7 @@ $(function() {
 			self.selectedRelay( {'topic':ko.observable('sonoff'),
 								'relayN':ko.observable(''),
 								'icon':ko.observable('icon-bolt'),
+								'showInNavbar':ko.observable(true),
 								'automaticShutdownEnabled':ko.observable(false),
 								'warn':ko.observable(true),
 								'warnPrinting':ko.observable(true),

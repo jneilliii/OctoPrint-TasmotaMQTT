@@ -85,6 +85,13 @@
 			</label>
 		</div>
 	</div>
+	<div class="control-group">
+		<div class="controls">
+			<label class="checkbox">
+			<input type="checkbox" title="Show TasmotaMQTT sidebar entry" data-bind="checked: settingsViewModel.settings.plugins.tasmota_mqtt.show_sidebar" />Show sidebar
+			</label>
+		</div>
+	</div>
 </div>
 
 <div id="TasmotaMQTTRelayEditor" data-bind="with: selectedRelay" class="modal hide fade">
@@ -98,6 +105,7 @@
 				<td><div class="controls"><label class="control-label">Topic</label><input type="text" class="input-block-level" data-bind="value: topic" /><div></td>
 				<td><div class="controls"><label class="control-label">Relay #</label><input type="text" class="input input-small" data-bind="value: relayN" /></div></td>
 				<td><div class="controls"><label class="control-label">Icon Class</label><input type="text" class="input-block-level" data-bind="value: icon, iconpicker: icon,iconpickerOptions: {hideOnSelect: true, collision: true}" /><div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: showInNavbar"/> Show in Navbar</label></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_upload"/> On With Upload Event</label></div></td>

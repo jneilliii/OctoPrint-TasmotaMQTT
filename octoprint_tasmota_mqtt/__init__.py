@@ -141,6 +141,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relay["event_on_upload"] = False
 				relay["event_on_startup"] = False
 				relay["event_on_connect"] = False
+				relay["event_on_disconnect"] = False
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
 
@@ -340,7 +341,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		return [
 			dict(type="navbar", custom_bindings=True),
 			dict(type="settings", custom_bindings=True),
-			dict(type="sidebar", icon="plug", custom_bindings=True, data_bind="visible: filteredSmartplugs().length > 0", template="tasmota_mqtt_sidebar.jinja2", template_header="tasmota_mqtt_sidebar_header.jinja2")
+			dict(type="sidebar", icon="plug", custom_bindings=True, data_bind="visible: filteredSmartplugs().length > 0 && settingsViewModel.settings.plugins.tasmota_mqtt.show_sidebar()", template="tasmota_mqtt_sidebar.jinja2", template_header="tasmota_mqtt_sidebar_header.jinja2")
 		]
 
 	##~~ SimpleApiPlugin mixin
