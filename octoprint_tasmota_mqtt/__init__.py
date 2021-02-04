@@ -140,6 +140,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			for relay in self._settings.get(['arrRelays']):
 				relay["event_on_upload"] = False
 				relay["event_on_startup"] = False
+				relay["event_on_connect"] = False
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
 
@@ -300,16 +301,17 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		# Printer Connecting event
 		elif event == Events.CONNECTING:
 			for relay in self._settings.get(["arrRelays"]):
-				# ToDo: add condition to Settings...
-				self._tasmota_mqtt_logger.debug("powering on {} due to connection attempt.".format(relay["topic"]))
-				self.turn_on(relay)
+				if relay["event_on_connect"] is True and not self._printer.is_ready():
+					self._tasmota_mqtt_logger.debug("powering on {} due to connection attempt.".format(relay["topic"]))
+					self.turn_on(relay)
 		# Printer Disconnected event
 		elif event == Events.DISCONNECTED:
 			for relay in self._settings.get(["arrRelays"]):
 				# ToDo: add condition to Settings...
-				if relay["currentstate"] == "ON":
-					self._tasmota_mqtt_logger.debug("powering off {} due to disconnect event.".format(relay["topic"]))
-					self.turn_off(relay)
+				if relay["currentstate"] == "ON" and relay["event_on_disconnect"] is True:
+					self._tasmota_mqtt_logger.debug("powering off {} after {} due to disconnect event.".format(relay["topic"],int(relay["disconnectAutoOffDelay"])))
+					t = threading.Timer(int(relay["disconnectAutoOffDelay"]),self.turn_off,[relay])
+					t.start()
 		# File Uploaded Event
 		elif event == Events.UPLOAD and any(map(lambda r: r["event_on_upload"] == True, self._settings.get(["arrRelays"]))):
 			if payload.get("print", False):  # implemented in OctoPrint version 1.4.1

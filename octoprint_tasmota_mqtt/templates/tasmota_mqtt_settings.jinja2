@@ -102,6 +102,7 @@
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_upload"/> On With Upload Event</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_startup"/> On With Startup Event</label></div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_connect"/> On With Connecting Event</label></div></td>
 				<td></td>
 			</tr>
 			<tr>
@@ -113,6 +114,9 @@
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: connect"/> Auto Connect</label><input type="text" data-bind="value: connectOnDelay,visible: connect" class="input input-small" /></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: disconnect"/> Auto Disconnect</label><input type="text" data-bind="value: disconnectOffDelay,visible: disconnect" class="input input-small" /></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: errorEvent"/> Off on Error</label></div></td>
+			</tr>
+			<tr>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_disconnect"/> Auto off after disconnect</label><input type="text" data-bind="value: disconnectAutoOffDelay,visible: event_on_disconnect" class="input input-small" /></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: gcode"/> GCODE Trigger</label></div></td>

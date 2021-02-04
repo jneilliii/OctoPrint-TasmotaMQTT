@@ -242,6 +242,7 @@ $(function() {
 								'gcodeOffDelay':ko.observable(0),
 								'connect':ko.observable(false),
 								'connectOnDelay':ko.observable(15),
+								'disconnectAutoOffDelay':ko.observable(30),
 								'disconnect':ko.observable(false),
 								'disconnectOffDelay':ko.observable(0),
 								'sysCmdOn':ko.observable(false),
@@ -252,7 +253,9 @@ $(function() {
 								'sysCmdOffDelay':ko.observable(0),
 								'currentstate':ko.observable('UNKNOWN'),
 								'event_on_upload':ko.observable(false),
-								'event_on_startup':ko.observable(false)} );
+								'event_on_startup':ko.observable(false),
+								'event_on_connect':ko.observable(false),
+								'event_on_disconnect':ko.observable(false)} );
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push(self.selectedRelay());
 			$("#TasmotaMQTTRelayEditor").modal("show");
 		}
