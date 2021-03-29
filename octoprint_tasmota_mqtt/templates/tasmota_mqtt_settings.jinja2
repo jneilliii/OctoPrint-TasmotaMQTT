@@ -46,6 +46,13 @@
 		</div>
 	</div>
 	<div class="control-group">
+		<div class="controls">
+			<label class="checkbox">
+			<input type="checkbox" title="Show TasmotaMQTT sidebar entry" data-bind="checked: settingsViewModel.settings.plugins.tasmota_mqtt.show_sidebar, enable: settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled />Show Sidebar
+			</label>
+		</div>
+	</div>
+	<div class="control-group">
 		<label class="control-label">Abort Power Off Timeout</label>
 		<div class="controls">
 			<div class="input-append" title="Pop up will be displayed for this amount of time to allow for cancelling power off of plugs.">
@@ -82,13 +89,6 @@
 		<div class="controls">
 			<label class="checkbox">
 			<input type="checkbox" title="Enable custom debug logging for troupleshooting." data-bind="checked: settingsViewModel.settings.plugins.tasmota_mqtt.debug_logging" />Debug Logging
-			</label>
-		</div>
-	</div>
-	<div class="control-group">
-		<div class="controls">
-			<label class="checkbox">
-			<input type="checkbox" title="Show TasmotaMQTT sidebar entry" data-bind="checked: settingsViewModel.settings.plugins.tasmota_mqtt.show_sidebar" />Show sidebar
 			</label>
 		</div>
 	</div>
