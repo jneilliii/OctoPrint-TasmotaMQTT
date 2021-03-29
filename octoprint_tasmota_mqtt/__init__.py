@@ -299,7 +299,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			if self._autostart_file:
 				self._tasmota_mqtt_logger.debug("printer connected starting print of %s" % self._autostart_file)
 				self._printer.select_file(self._autostart_file, False, printAfterSelect=True)
-				self._autostart_file = Non
+				self._autostart_file = None
         
 		# Printer Connecting event
 		elif event == Events.CONNECTING:
@@ -686,7 +686,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 				# version check: github repository
 				type="github_release",
-				user="RoboMagus",
+				user="jneilliii",
 				repo="OctoPrint-TasmotaMQTT",
 				current=self._plugin_version,
 				stable_branch=dict(
@@ -701,7 +701,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				],
 
 				# update method: pip
-				pip="https://github.com/RoboMagus/OctoPrint-TasmotaMQTT/archive/{target_version}.zip"
+				pip="https://github.com/jneilliii/OctoPrint-TasmotaMQTT/archive/{target_version}.zip"
 			)
 		)
 
