@@ -112,7 +112,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 	def get_settings_version(self):
-		return 5
+		return 6
 
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 3:
@@ -140,9 +140,16 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			for relay in self._settings.get(['arrRelays']):
 				relay["event_on_upload"] = False
 				relay["event_on_startup"] = False
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"], arrRelays_new)
+
+		if current <= 5:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
 				relay["event_on_connect"] = False
 				relay["event_on_disconnect"] = False
-        
+				relay["showInNavbar"] = True
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
 
