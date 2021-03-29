@@ -142,6 +142,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relay["event_on_startup"] = False
 				relay["event_on_connect"] = False
 				relay["event_on_disconnect"] = False
+        
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
 
@@ -298,7 +299,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			if self._autostart_file:
 				self._tasmota_mqtt_logger.debug("printer connected starting print of %s" % self._autostart_file)
 				self._printer.select_file(self._autostart_file, False, printAfterSelect=True)
-				self._autostart_file = None
+				self._autostart_file = Non
+        
 		# Printer Connecting event
 		elif event == Events.CONNECTING:
 			for relay in self._settings.get(["arrRelays"]):
