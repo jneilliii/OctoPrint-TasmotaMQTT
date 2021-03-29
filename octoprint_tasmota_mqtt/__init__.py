@@ -108,7 +108,8 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			idleTimeout = 30,
 			idleIgnoreCommands = 'M105',
 			idleTimeoutWaitTemp = 50,
-			debug_logging = False
+			debug_logging = False,
+			show_sidebar = True
 		)
 
 	def get_settings_version(self):
