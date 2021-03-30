@@ -150,6 +150,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			for relay in self._settings.get(['arrRelays']):
 				relay["event_on_connect"] = False
 				relay["event_on_disconnect"] = False
+				relay["disconnectAutoOffDelay"] = 30
 				relay["showInNavbar"] = True
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
