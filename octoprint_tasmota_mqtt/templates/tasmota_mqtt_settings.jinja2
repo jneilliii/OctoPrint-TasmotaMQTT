@@ -114,9 +114,12 @@
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_connect"/> On With Connecting Event</label></div></td>
 			</tr>
 			<tr>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: showInNavbar"/> Show in Navbar</label></div></td>
+			</tr>
+			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_upload"/> On With Upload Event</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_startup"/> On With Startup Event</label></div></td>
-				<td></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_connect"/> On With Connecting Event</label></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: automaticShutdownEnabled, enable: $root.settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled /> Off on Idle</label></div></td>
