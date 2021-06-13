@@ -108,11 +108,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			idleTimeout = 30,
 			idleIgnoreCommands = 'M105',
 			idleTimeoutWaitTemp = 50,
-			debug_logging = False
+			debug_logging = False,
+			show_sidebar = True
 		)
 
 	def get_settings_version(self):
-		return 5
+		return 6
 
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 3:
@@ -140,6 +141,17 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			for relay in self._settings.get(['arrRelays']):
 				relay["event_on_upload"] = False
 				relay["event_on_startup"] = False
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"], arrRelays_new)
+
+		if current <= 5:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
+				relay["event_on_connect"] = False
+				relay["event_on_disconnect"] = False
+				relay["disconnectAutoOffDelay"] = 30
+				relay["showInNavbar"] = True
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
 
@@ -260,12 +272,12 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				self._plugin_manager.send_plugin_message(self._identifier, dict(noMQTT=True))
 
 		# Client Opened Event
-		if event == Events.CLIENT_OPENED:
+		elif event == Events.CLIENT_OPENED:
 			self._plugin_manager.send_plugin_message(self._identifier, dict(powerOffWhenIdle=self.powerOffWhenIdle, type="timeout", timeout_value=self._timeout_value))
 			return
 
 		# Print Started Event
-		if event == Events.PRINT_STARTED and self.powerOffWhenIdle == True:
+		elif event == Events.PRINT_STARTED and self.powerOffWhenIdle == True:
 			if self._abort_timer is not None:
 				self._abort_timer.cancel()
 				self._abort_timer = None
@@ -276,29 +288,44 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			self._plugin_manager.send_plugin_message(self._identifier, dict(powerOffWhenIdle=self.powerOffWhenIdle, type="timeout", timeout_value=self._timeout_value))
 
 		# Print Error Event
-		if event == Events.ERROR:
+		elif event == Events.ERROR:
 			self._tasmota_mqtt_logger.debug("Powering off enabled plugs because there was an error.")
 			for relay in self._settings.get(['arrRelays']):
 				if relay.get("errorEvent", False):
 					self.turn_off(relay)
 
 		# Timeplapse Events
-		if self.powerOffWhenIdle == True and event == Events.MOVIE_RENDERING:
+		elif self.powerOffWhenIdle == True and event == Events.MOVIE_RENDERING:
 			self._tasmota_mqtt_logger.debug("Timelapse generation started: %s" % payload.get("movie_basename", ""))
 			self._timelapse_active = True
 
-		if self._timelapse_active and event == Events.MOVIE_DONE or event == Events.MOVIE_FAILED:
+		elif self._timelapse_active and event == Events.MOVIE_DONE or event == Events.MOVIE_FAILED:
 			self._tasmota_mqtt_logger.debug("Timelapse generation finished: %s. Return Code: %s" % (payload.get("movie_basename", ""), payload.get("returncode", "completed")))
 			self._timelapse_active = False
 
 		# Printer Connected Event
-		if event == Events.CONNECTED:
+		elif event == Events.CONNECTED:
 			if self._autostart_file:
 				self._tasmota_mqtt_logger.debug("printer connected starting print of %s" % self._autostart_file)
 				self._printer.select_file(self._autostart_file, False, printAfterSelect=True)
 				self._autostart_file = None
+        
+		# Printer Connecting event
+		elif event == Events.CONNECTING:
+			for relay in self._settings.get(["arrRelays"]):
+				if relay["event_on_connect"] is True and not self._printer.is_ready():
+					self._tasmota_mqtt_logger.debug("powering on {} due to connection attempt.".format(relay["topic"]))
+					self.turn_on(relay)
+		# Printer Disconnected event
+		elif event == Events.DISCONNECTED:
+			for relay in self._settings.get(["arrRelays"]):
+				# ToDo: add condition to Settings...
+				if relay["currentstate"] == "ON" and relay["event_on_disconnect"] is True:
+					self._tasmota_mqtt_logger.debug("powering off {} after {} due to disconnect event.".format(relay["topic"],int(relay["disconnectAutoOffDelay"])))
+					t = threading.Timer(int(relay["disconnectAutoOffDelay"]),self.turn_off,[relay])
+					t.start()
 		# File Uploaded Event
-		if event == Events.UPLOAD and any(map(lambda r: r["event_on_upload"] == True, self._settings.get(["arrRelays"]))):
+		elif event == Events.UPLOAD and any(map(lambda r: r["event_on_upload"] == True, self._settings.get(["arrRelays"]))):
 			if payload.get("print", False):  # implemented in OctoPrint version 1.4.1
 				self._tasmota_mqtt_logger.debug(
 					"File uploaded: %s. Turning enabled relays on." % payload.get("name", ""))
@@ -325,7 +352,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		return [
 			dict(type="navbar", custom_bindings=True),
 			dict(type="settings", custom_bindings=True),
-			dict(type="sidebar", icon="plug", custom_bindings=True, data_bind="visible: filteredSmartplugs().length > 0", template="tasmota_mqtt_sidebar.jinja2", template_header="tasmota_mqtt_sidebar_header.jinja2")
+			dict(type="sidebar", icon="plug", custom_bindings=True, data_bind="visible: filteredSmartplugs().length > 0 && settingsViewModel.settings.plugins.tasmota_mqtt.show_sidebar()", template="tasmota_mqtt_sidebar.jinja2", template_header="tasmota_mqtt_sidebar_header.jinja2")
 		]
 
 	##~~ SimpleApiPlugin mixin
