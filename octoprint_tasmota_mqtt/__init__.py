@@ -113,7 +113,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 	def get_settings_version(self):
-		return 6
+		return 7
 
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 3:
@@ -152,6 +152,14 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relay["event_on_disconnect"] = False
 				relay["disconnectAutoOffDelay"] = 30
 				relay["showInNavbar"] = True
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"], arrRelays_new)
+
+		if current <= 6:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
+				relay["label"] = ""
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
 
@@ -469,7 +477,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			self._tasmota_mqtt_logger.debug("@ command received parameters: {}".format(parameters))
 			if len(parameters) >= 3:
 				for relay in self._settings.get(["arrRelays"]):
-					if relay["topic"].upper() == parameters[0].upper() and relay["relayN"] == parameters[1]:
+					if relay["topic"].upper() == parameters[0].upper() and parameters[1] in [relay["relayN"], "0"]:
 						if parameters[2] == "ON":
 							self.turn_on(relay)
 						if parameters[2] == "OFF":

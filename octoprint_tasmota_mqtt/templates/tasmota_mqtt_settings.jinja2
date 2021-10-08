@@ -102,14 +102,13 @@
 	<div class="modal-body">
 		<table class="table table-condensed">
 			<tr>
-				<td><div class="controls"><label class="control-label">Topic</label><input type="text" class="input-block-level" data-bind="value: topic" /><div></td>
+				<td><div class="controls"><label class="control-label">Topic</label><input type="text" class="input-block-level" data-bind="value: topic" /></div></td>
 				<td><div class="controls"><label class="control-label">Relay #</label><input type="text" class="input input-small" data-bind="value: relayN" /></div></td>
-				<td><div class="controls"><label class="control-label">Icon Class</label><input type="text" class="input-block-level" data-bind="value: icon, iconpicker: icon,iconpickerOptions: {hideOnSelect: true, collision: true}" /><div></td>
-			</tr>
+				<td><div class="controls"><label class="control-label">Icon Class</label><input type="text" class="input-block-level" data-bind="value: icon, iconpicker: icon,iconpickerOptions: {hideOnSelect: true, collision: true}" /></div></td>
+			    <td><div class="controls"><label class="control-label">Label</label><input type="text" class="input-block-level" data-bind="value: label" /></div></td>
+            </tr>
 			<tr>
-				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: showInNavbar"/> Show in Navbar</label></div></td>
-			</tr>
-			<tr>
+                <td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: showInNavbar"/> Show in Navbar</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_upload"/> On With Upload Event</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_startup"/> On With Startup Event</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_connect"/> On With Connecting Event</label></div></td>

@@ -147,7 +147,7 @@ $(function() {
 							hide: false
 							});
 				return;
-			} 
+			}
 			if (data.hasOwnProperty("powerOffWhenIdle")) {
 				self.settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle(data.powerOffWhenIdle);
 
@@ -168,7 +168,7 @@ $(function() {
 					}
 				}
 				return;
-			} 
+			}
 			if (data.hasOwnProperty("topic")) {
 				var relay = ko.utils.arrayFirst(self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays(),function(item){
 					return (item.topic() == data.topic) && (item.relayN() == data.relayN);
@@ -256,7 +256,8 @@ $(function() {
 								'event_on_upload':ko.observable(false),
 								'event_on_startup':ko.observable(false),
 								'event_on_connect':ko.observable(false),
-								'event_on_disconnect':ko.observable(false)} );
+								'event_on_disconnect':ko.observable(false),
+                                'label': ko.observable('')} );
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push(self.selectedRelay());
 			$("#TasmotaMQTTRelayEditor").modal("show");
 		}
