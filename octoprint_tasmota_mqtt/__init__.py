@@ -309,7 +309,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				self._tasmota_mqtt_logger.debug("printer connected starting print of %s" % self._autostart_file)
 				self._printer.select_file(self._autostart_file, False, printAfterSelect=True)
 				self._autostart_file = None
-        
+
 		# Printer Connecting event
 		elif event == Events.CONNECTING:
 			for relay in self._settings.get(["arrRelays"]):
@@ -460,6 +460,20 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			self._printer.disconnect()
 			time.sleep(int(relay["disconnectOffDelay"]))
 		self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "OFF")
+
+	##~~ at command processing hook
+
+	def processAtCommand(self, comm_instance, phase, command, parameters, tags=None, *args, **kwargs):
+		if command == "TASMOTAMQTT":
+			parameters = parameters.split(' ')
+			self._tasmota_mqtt_logger.debug("@ command received parameters: {}".format(parameters))
+			if len(parameters) >= 3:
+				for relay in self._settings.get(["arrRelays"]):
+					if relay["topic"].upper() == parameters[0].upper() and relay["relayN"] == parameters[1]:
+						if parameters[2] == "ON":
+							self.turn_on(relay)
+						if parameters[2] == "OFF":
+							self.turn_off(relay)
 
 	##~~ Gcode processing hook
 
@@ -724,6 +738,7 @@ def __plugin_load__():
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
+		"octoprint.comm.protocol.atcommand.sending": __plugin_implementation__.processAtCommand,
 		"octoprint.access.permissions": __plugin_implementation__.get_additional_permissions,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
