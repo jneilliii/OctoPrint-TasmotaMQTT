@@ -113,7 +113,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 	def get_settings_version(self):
-		return 7
+		return 8
 
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 3:
@@ -160,6 +160,14 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			arrRelays_new = []
 			for relay in self._settings.get(['arrRelays']):
 				relay["label"] = ""
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"], arrRelays_new)
+
+		if current <= 7:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
+				relay["invertedLogic"] = False
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
 
@@ -253,13 +261,22 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		bolRelayStateChanged = False
 		bolForceIdleTimer = False
 		for relay in self._settings.get(["arrRelays"]):
-			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message.decode("utf-8"):
+			if relay["invertedLogic"]:
+				if message.decode("utf-8") == "ON":
+					currentstate = "OFF"
+				elif message.decode("utf-8") == "OFF":
+					currentstate = "ON"
+				else:
+					currentstate = "UNKNOWN"
+			else:
+				currentstate = message.decode("utf-8")
+			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != currentstate:
 				bolRelayStateChanged = True
-				relay["currentstate"] = message.decode("utf-8")
+				relay["currentstate"] = currentstate
 				if relay["automaticShutdownEnabled"] == True and self._settings.get_boolean(["powerOffWhenIdle"]) and relay["currentstate"] == "ON":
 					self._tasmota_mqtt_logger.debug("Forcing reset of idle timer because {} was just turned on.".format(relay["topic"]))
 					bolForceIdleTimer = True
-				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message.decode("utf-8")))
+				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=relay["currentstate"]))
 			newrelays.append(relay)
 
 		if bolRelayStateChanged:
@@ -448,7 +465,10 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return json.dumps(self._settings.get(["arrRelays"]))
 
 	def turn_on(self, relay):
-		self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "ON")
+		if relay["invertedLogic"]:
+			self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "OFF")
+		else:
+			self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "ON")
 		if relay["sysCmdOn"]:
 			t = threading.Timer(int(relay["sysCmdOnDelay"]),os.system,args=[relay["sysCmdRunOn"]])
 			t.start()
@@ -467,7 +487,10 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if relay["disconnect"]:
 			self._printer.disconnect()
 			time.sleep(int(relay["disconnectOffDelay"]))
-		self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "OFF")
+		if relay["invertedLogic"]:
+			self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "ON")
+		else:
+			self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "OFF")
 
 	##~~ at command processing hook
 

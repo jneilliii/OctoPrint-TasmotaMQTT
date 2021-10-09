@@ -257,7 +257,8 @@ $(function() {
 								'event_on_startup':ko.observable(false),
 								'event_on_connect':ko.observable(false),
 								'event_on_disconnect':ko.observable(false),
-                                'label': ko.observable('')} );
+                                'label': ko.observable(''),
+                                'invertedLogic': ko.observable(false)} );
 			self.settingsViewModel.settings.plugins.tasmota_mqtt.arrRelays.push(self.selectedRelay());
 			$("#TasmotaMQTTRelayEditor").modal("show");
 		}
