@@ -46,6 +46,13 @@
 		</div>
 	</div>
 	<div class="control-group">
+		<div class="controls">
+			<label class="checkbox">
+			<input type="checkbox" title="Show TasmotaMQTT sidebar entry" data-bind="checked: settingsViewModel.settings.plugins.tasmota_mqtt.show_sidebar, enable: settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled />Show Sidebar
+			</label>
+		</div>
+	</div>
+	<div class="control-group">
 		<label class="control-label">Abort Power Off Timeout</label>
 		<div class="controls">
 			<div class="input-append" title="Pop up will be displayed for this amount of time to allow for cancelling power off of plugs.">
@@ -95,24 +102,30 @@
 	<div class="modal-body">
 		<table class="table table-condensed">
 			<tr>
-				<td><div class="controls"><label class="control-label">Topic</label><input type="text" class="input-block-level" data-bind="value: topic" /><div></td>
+				<td><div class="controls"><label class="control-label">Topic</label><input type="text" class="input-block-level" data-bind="value: topic" /></div></td>
 				<td><div class="controls"><label class="control-label">Relay #</label><input type="text" class="input input-small" data-bind="value: relayN" /></div></td>
-				<td><div class="controls"><label class="control-label">Icon Class</label><input type="text" class="input-block-level" data-bind="value: icon, iconpicker: icon,iconpickerOptions: {hideOnSelect: true, collision: true}" /><div></td>
-			</tr>
+				<td><div class="controls"><label class="control-label">Icon Class</label><input type="text" class="input-block-level" data-bind="value: icon, iconpicker: icon,iconpickerOptions: {hideOnSelect: true, collision: true}" /></div></td>
+			    <td><div class="controls"><label class="control-label">Label</label><input type="text" class="input-block-level" data-bind="value: label" /></div></td>
+            </tr>
 			<tr>
+                <td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: showInNavbar"/> Show in Navbar</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_upload"/> On With Upload Event</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_startup"/> On With Startup Event</label></div></td>
-				<td></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_connect"/> On With Connecting Event</label></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: automaticShutdownEnabled, enable: $root.settingsViewModel.settings.plugins.tasmota_mqtt.powerOffWhenIdle()" disabled /> Off on Idle</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: warn"/> Warning Prompt</label></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: warnPrinting"/> Warn While Printing</label></div></td>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: invertedLogic"/> Inverted Logic</label></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: connect"/> Auto Connect</label><input type="text" data-bind="value: connectOnDelay,visible: connect" class="input input-small" /></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: disconnect"/> Auto Disconnect</label><input type="text" data-bind="value: disconnectOffDelay,visible: disconnect" class="input input-small" /></div></td>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: errorEvent"/> Off on Error</label></div></td>
+			</tr>
+			<tr>
+				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: event_on_disconnect"/> Auto off after disconnect</label><input type="text" data-bind="value: disconnectAutoOffDelay,visible: event_on_disconnect" class="input input-small" /></div></td>
 			</tr>
 			<tr>
 				<td><div class="controls"><label class="checkbox"><input type="checkbox" data-bind="checked: gcode"/> GCODE Trigger</label></div></td>
