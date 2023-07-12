@@ -161,8 +161,13 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		old_idleTimeout = self._settings.get_int(["idleTimeout"])
 		old_idleIgnoreCommands = self._settings.get(["idleIgnoreCommands"])
 		old_idleTimeoutWaitTemp = self._settings.get_int(["idleTimeoutWaitTemp"])
+		old_relays = self._settings.get(['arrRelays'])
+		old_full_topic_pattern = self._settings.get(["full_topic_pattern"])
 
 		octoprint.plugin.SettingsPlugin.on_settings_save(self, data)
+
+		new_relays = self._settings.get(['arrRelays'])
+		new_full_topic_pattern = self._settings.get(["full_topic_pattern"])
 
 		self.abortTimeout = self._settings.get_int(["abortTimeout"])
 		self.powerOffWhenIdle = self._settings.get_boolean(["powerOffWhenIdle"])
@@ -186,6 +191,25 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				self._tasmota_mqtt_logger.setLevel(logging.DEBUG)
 			else:
 				self._tasmota_mqtt_logger.setLevel(logging.INFO)
+
+		if old_full_topic_pattern != new_full_topic_pattern:
+			self._tasmota_mqtt_logger.debug("Removing subscriptions because of full topic pattern change.")
+			for relay in old_relays:
+				self._tasmota_mqtt_logger.debug(f"unsubscribing {relay}")
+				self.mqtt_unsubscribe(self._on_mqtt_subscription,topic=self.generate_mqtt_full_topic(relay, "stat"))
+			for relay in new_relays:
+				self._tasmota_mqtt_logger.debug(f"subscribing {relay}")
+				self.mqtt_subscribe(self.generate_mqtt_full_topic(relay, "stat"), self._on_mqtt_subscription, kwargs=dict(top=relay["topic"], relayN=relay["relayN"]))
+		elif old_relays != new_relays:
+			self._tasmota_mqtt_logger.debug("Looping relays and syncing up subscriptions.")
+			for relay in old_relays:
+				if relay not in new_relays:
+					self._tasmota_mqtt_logger.debug(f"unsubscribing {relay}")
+					self.mqtt_unsubscribe(self._on_mqtt_subscription,topic=self.generate_mqtt_full_topic(relay, "stat"))
+			for relay in new_relays:
+				if relay not in old_relays:
+					self._tasmota_mqtt_logger.debug(f"subscribing {relay}")
+					self.mqtt_subscribe(self.generate_mqtt_full_topic(relay, "stat"), self._on_mqtt_subscription, kwargs=dict(top=relay["topic"], relayN=relay["relayN"]))
 
 	##~~ StartupPlugin mixin
 
