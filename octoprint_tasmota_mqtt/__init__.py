@@ -2,7 +2,6 @@
 from __future__ import absolute_import
 
 import octoprint.plugin
-from octoprint.server import user_permission
 from octoprint.events import eventManager, Events
 from octoprint.util import RepeatedTimer
 from octoprint.access.permissions import Permissions, ADMIN_GROUP
@@ -333,7 +332,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				self._tasmota_mqtt_logger.debug("printer connected starting print of %s" % self._autostart_file)
 				self._printer.select_file(self._autostart_file, False, printAfterSelect=True)
 				self._autostart_file = None
-        
+
 		# Printer Connecting event
 		elif event == Events.CONNECTING:
 			for relay in self._settings.get(["arrRelays"]):
@@ -372,6 +371,9 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	##~~ TemplatePlugin mixin
 
+	def is_template_autoescaped(self):
+		return True
+
 	def get_template_configs(self):
 		return [
 			dict(type="navbar", custom_bindings=True),
@@ -380,6 +382,9 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		]
 
 	##~~ SimpleApiPlugin mixin
+
+	def is_api_protected(self):
+		return True
 
 	def get_api_commands(self):
 		return dict(

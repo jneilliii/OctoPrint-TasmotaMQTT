@@ -1,0 +1,45 @@
+[build-system]
+requires = [
+    "setuptools>=68",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "OctoPrint-TasmotaMQTT"
+version = "1.0.0rc2"
+description = "Plugin to control Tasmota devices via MQTT protocol."
+authors = [
+    { name = "jneilliii", email = "jneilliii+github@gmail.com" },
+]
+requires-python = ">=3.7,<4"
+dependencies = [
+    "uptime",
+    "octoprint-mqtt@https://github.com/OctoPrint/OctoPrint-MQTT/archive/master.zip",
+]
+dynamic = [
+    "license",
+]
+
+[project.entry-points."octoprint.plugin"]
+tasmota_mqtt = "octoprint_tasmota_mqtt"
+
+[project.urls]
+Homepage = "https://github.com/jneilliii/OctoPrint-TasmotaMQTT"
+
+[project.optional-dependencies]
+develop = [
+    "go-task-bin",
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = [
+    "octoprint_tasmota_mqtt",
+    "octoprint_tasmota_mqtt.*",
+]
