@@ -23,7 +23,7 @@ Install via the Plugin Manager or manually using this URL:
  - **Icon class:** lets you select the icon to be shown on the front page.
  - **Warning Prompt:** Issues always an addtional warning to avoid accidentally switching.
  - **Warn While Printing:** Issues an addtional warning only if a print is in progress. 
- - **Auto Connect:** Connect to the printer N seconds after power was switched on. The time delays can help to establish a stable connection. 	
+ - **Auto Connect:** Connect to the printer N seconds after power was switched on. The time delays can help to establish a stable connection. This also works when the relay is switched on outside of OctoPrint, for example from Home Assistant, the Tasmota web UI or the device's button. 	
  - **Auto Disconnect:** Disconnects the printer N seconds prior of switching off the power.  
  - **GCODE Trigger:** Enable the switching via M80 and M81 code. See below.
  - **GCODE On Delay:** Time delay in seconds after receiving M80 before switching on.

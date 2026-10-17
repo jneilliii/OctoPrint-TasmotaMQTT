@@ -89,6 +89,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._skipIdleTimer = False
 		self.powerOffWhenIdle = False
 		self._idleTimer = None
+		self._connect_timer = None
 		self._autostart_file = None
 		self.mqtt_publish = None
 		self.mqtt_subscribe = None
@@ -273,6 +274,9 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != currentstate:
 				bolRelayStateChanged = True
 				relay["currentstate"] = currentstate
+				# relay switched on outside of OctoPrint (other MQTT client, Tasmota web UI, physical button)
+				if relay["currentstate"] == "ON" and relay["connect"]:
+					self._schedule_connect(relay)
 				if relay["automaticShutdownEnabled"] == True and self._settings.get_boolean(["powerOffWhenIdle"]) and relay["currentstate"] == "ON":
 					self._tasmota_mqtt_logger.debug("Forcing reset of idle timer because {} was just turned on.".format(relay["topic"]))
 					bolForceIdleTimer = True
@@ -472,13 +476,27 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if relay["sysCmdOn"]:
 			t = threading.Timer(int(relay["sysCmdOnDelay"]),os.system,args=[relay["sysCmdRunOn"]])
 			t.start()
-		if relay["connect"] and self._printer.is_closed_or_error():
-			t = threading.Timer(int(relay["connectOnDelay"]),self._printer.connect)
-			t.start()
+		if relay["connect"]:
+			self._schedule_connect(relay)
 		if self.powerOffWhenIdle == True and relay["automaticShutdownEnabled"] == True:
 			self._tasmota_mqtt_logger.debug("Resetting idle timer since relay %s | %s was just turned on." % (relay["topic"], relay["relayN"]))
 			self._waitForHeaters = False
 			self._reset_idle_timer()
+
+	def _schedule_connect(self, relay):
+		# turn_on() is followed by the relay's own ON message, so skip if a connect is already pending
+		if not self._printer.is_closed_or_error():
+			return
+		if self._connect_timer is not None and self._connect_timer.is_alive():
+			self._tasmota_mqtt_logger.debug("connect already scheduled, ignoring {} relay {}".format(relay["topic"], relay["relayN"]))
+			return
+		self._tasmota_mqtt_logger.debug("connecting to printer in {} seconds because {} relay {} was turned on".format(int(relay["connectOnDelay"]), relay["topic"], relay["relayN"]))
+		self._connect_timer = threading.Timer(int(relay["connectOnDelay"]), self._connect_printer)
+		self._connect_timer.start()
+
+	def _connect_printer(self):
+		if self._printer.is_closed_or_error():
+			self._printer.connect()
 
 	def turn_off(self, relay):
 		if relay["sysCmdOff"]:
