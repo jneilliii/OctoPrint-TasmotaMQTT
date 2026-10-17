@@ -492,6 +492,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return
 		self._tasmota_mqtt_logger.debug("connecting to printer in {} seconds because {} relay {} was turned on".format(int(relay["connectOnDelay"]), relay["topic"], relay["relayN"]))
 		self._connect_timer = threading.Timer(int(relay["connectOnDelay"]), self._connect_printer)
+		self._connect_timer.daemon = True
 		self._connect_timer.start()
 
 	def _connect_printer(self):
