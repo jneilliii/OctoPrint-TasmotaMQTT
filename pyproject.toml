@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "OctoPrint-TasmotaMQTT"
-version = "1.0.0rc2"
+version = "1.0.0"
 description = "Plugin to control Tasmota devices via MQTT protocol."
 authors = [
     { name = "jneilliii", email = "jneilliii+github@gmail.com" },
