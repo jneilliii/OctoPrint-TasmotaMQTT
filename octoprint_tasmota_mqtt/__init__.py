@@ -88,6 +88,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		self._skipIdleTimer = False
 		self.powerOffWhenIdle = False
 		self._idleTimer = None
+		self._connect_timer = None
 		self._autostart_file = None
 		self.mqtt_publish = None
 		self.mqtt_subscribe = None
@@ -112,7 +113,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		)
 
 	def get_settings_version(self):
-		return 6
+		return 8
 
 	def on_settings_migrate(self, target, current=None):
 		if current is None or current < 3:
@@ -151,6 +152,22 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				relay["event_on_disconnect"] = False
 				relay["disconnectAutoOffDelay"] = 30
 				relay["showInNavbar"] = True
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"], arrRelays_new)
+
+		if current <= 6:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
+				relay["label"] = ""
+				arrRelays_new.append(relay)
+			self._settings.set(["arrRelays"], arrRelays_new)
+
+		if current <= 7:
+			# Add new fields
+			arrRelays_new = []
+			for relay in self._settings.get(['arrRelays']):
+				relay["invertedLogic"] = False
 				arrRelays_new.append(relay)
 			self._settings.set(["arrRelays"], arrRelays_new)
 
@@ -268,13 +285,25 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		bolRelayStateChanged = False
 		bolForceIdleTimer = False
 		for relay in self._settings.get(["arrRelays"]):
-			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != message.decode("utf-8"):
+			if relay["invertedLogic"]:
+				if message.decode("utf-8") == "ON":
+					currentstate = "OFF"
+				elif message.decode("utf-8") == "OFF":
+					currentstate = "ON"
+				else:
+					currentstate = "UNKNOWN"
+			else:
+				currentstate = message.decode("utf-8")
+			if relay["topic"] == "{top}".format(**kwargs) and relay["relayN"] == "{relayN}".format(**kwargs) and relay["currentstate"] != currentstate:
 				bolRelayStateChanged = True
-				relay["currentstate"] = message.decode("utf-8")
+				relay["currentstate"] = currentstate
+				# relay switched on outside of OctoPrint (other MQTT client, Tasmota web UI, physical button)
+				if relay["currentstate"] == "ON" and relay["connect"]:
+					self._schedule_connect(relay)
 				if relay["automaticShutdownEnabled"] == True and self._settings.get_boolean(["powerOffWhenIdle"]) and relay["currentstate"] == "ON":
 					self._tasmota_mqtt_logger.debug("Forcing reset of idle timer because {} was just turned on.".format(relay["topic"]))
 					bolForceIdleTimer = True
-				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=message.decode("utf-8")))
+				self._plugin_manager.send_plugin_message(self._identifier, dict(topic="{top}".format(**kwargs),relayN="{relayN}".format(**kwargs),currentstate=relay["currentstate"]))
 			newrelays.append(relay)
 
 		if bolRelayStateChanged:
@@ -469,17 +498,35 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return json.dumps(self._settings.get(["arrRelays"]))
 
 	def turn_on(self, relay):
-		self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "ON")
+		if relay["invertedLogic"]:
+			self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "OFF")
+		else:
+			self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "ON")
 		if relay["sysCmdOn"]:
 			t = threading.Timer(int(relay["sysCmdOnDelay"]),os.system,args=[relay["sysCmdRunOn"]])
 			t.start()
-		if relay["connect"] and self._printer.is_closed_or_error():
-			t = threading.Timer(int(relay["connectOnDelay"]),self._printer.connect)
-			t.start()
+		if relay["connect"]:
+			self._schedule_connect(relay)
 		if self.powerOffWhenIdle == True and relay["automaticShutdownEnabled"] == True:
 			self._tasmota_mqtt_logger.debug("Resetting idle timer since relay %s | %s was just turned on." % (relay["topic"], relay["relayN"]))
 			self._waitForHeaters = False
 			self._reset_idle_timer()
+
+	def _schedule_connect(self, relay):
+		# turn_on() is followed by the relay's own ON message, so skip if a connect is already pending
+		if not self._printer.is_closed_or_error():
+			return
+		if self._connect_timer is not None and self._connect_timer.is_alive():
+			self._tasmota_mqtt_logger.debug("connect already scheduled, ignoring {} relay {}".format(relay["topic"], relay["relayN"]))
+			return
+		self._tasmota_mqtt_logger.debug("connecting to printer in {} seconds because {} relay {} was turned on".format(int(relay["connectOnDelay"]), relay["topic"], relay["relayN"]))
+		self._connect_timer = threading.Timer(int(relay["connectOnDelay"]), self._connect_printer)
+		self._connect_timer.daemon = True
+		self._connect_timer.start()
+
+	def _connect_printer(self):
+		if self._printer.is_closed_or_error():
+			self._printer.connect()
 
 	def turn_off(self, relay):
 		if relay["sysCmdOff"]:
@@ -488,7 +535,24 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 		if relay["disconnect"]:
 			self._printer.disconnect()
 			time.sleep(int(relay["disconnectOffDelay"]))
-		self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "OFF")
+		if relay["invertedLogic"]:
+			self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "ON")
+		else:
+			self.mqtt_publish(self.generate_mqtt_full_topic(relay, "cmnd"), "OFF")
+
+	##~~ at command processing hook
+
+	def processAtCommand(self, comm_instance, phase, command, parameters, tags=None, *args, **kwargs):
+		if command == "TASMOTAMQTT":
+			parameters = parameters.split(' ')
+			self._tasmota_mqtt_logger.debug("@ command received parameters: {}".format(parameters))
+			if len(parameters) >= 3:
+				for relay in self._settings.get(["arrRelays"]):
+					if relay["topic"].upper() == parameters[0].upper() and parameters[1] in [relay["relayN"], "0"]:
+						if parameters[2] == "ON":
+							self.turn_on(relay)
+						if parameters[2] == "OFF":
+							self.turn_off(relay)
 
 	##~~ Gcode processing hook
 
@@ -753,6 +817,7 @@ def __plugin_load__():
 	global __plugin_hooks__
 	__plugin_hooks__ = {
 		"octoprint.comm.protocol.gcode.queuing": __plugin_implementation__.processGCODE,
+		"octoprint.comm.protocol.atcommand.sending": __plugin_implementation__.processAtCommand,
 		"octoprint.access.permissions": __plugin_implementation__.get_additional_permissions,
 		"octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
 	}
