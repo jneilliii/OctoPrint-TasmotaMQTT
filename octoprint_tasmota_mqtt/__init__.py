@@ -633,12 +633,19 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 			return
 
 		self._tasmota_mqtt_logger.debug("Idle timeout reached after %s minute(s). Turning heaters off prior to powering off plugs." % self.idleTimeout)
-		if self._wait_for_heaters():
-			self._tasmota_mqtt_logger.debug("Heaters below temperature.")
-			if self._wait_for_timelapse():
-				self._timer_start()
-		else:
-			self._tasmota_mqtt_logger.debug("Aborted power off due to activity.")
+		try:
+			if self._wait_for_heaters():
+				self._tasmota_mqtt_logger.debug("Heaters below temperature.")
+				if self._wait_for_timelapse():
+					self._timer_start()
+			else:
+				self._tasmota_mqtt_logger.debug("Aborted power off due to activity.")
+		except Exception:
+			self._tasmota_mqtt_logger.exception("Idle power off failed, restarting idle timer.")
+			self._waitForHeaters = False
+			self._waitForTimelapse = False
+			self._skipIdleTimer = False
+			self._start_idle_timer()
 
 	##~~ Timelapse Monitoring
 
@@ -661,6 +668,7 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 
 	def _wait_for_heaters(self):
 		self._waitForHeaters = True
+		valid_heater_regex = getattr(self._printer, "valid_heater_regex", re.compile(r"^(tool\d*|bed|chamber)$"))
 		heaters = self._printer.get_current_temperatures()
 
 		for heater, entry in heaters.items():
@@ -676,10 +684,19 @@ class TasmotaMQTTPlugin(octoprint.plugin.SettingsPlugin,
 				continue
 
 			if temp != 0:
+				if not valid_heater_regex.match(heater):
+					# OctoPrint only accepts tool, toolN, bed and chamber (e.g. Prusa XL also reports X0, A, B_x_y)
+					self._tasmota_mqtt_logger.debug("Skipping heater %s, not settable through OctoPrint." % heater)
+					continue
+
 				self._tasmota_mqtt_logger.debug("Turning off heater: %s" % heater)
 				self._skipIdleTimer = True
-				self._printer.set_temperature(heater, 0)
-				self._skipIdleTimer = False
+				try:
+					self._printer.set_temperature(heater, 0)
+				except Exception:
+					self._tasmota_mqtt_logger.exception("Failed to turn off heater %s" % heater)
+				finally:
+					self._skipIdleTimer = False
 			else:
 				self._tasmota_mqtt_logger.debug("Heater %s already off." % heater)
 
